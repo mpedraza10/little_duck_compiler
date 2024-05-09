@@ -235,7 +235,7 @@ def p_print(p):
     "print : PRINT LPAREN print_opt RPAREN ENDINSTRUC"
 
 def p_print_opt(p):
-    """print_opt : list_exp more_opt
+    """print_opt : expresion more_opt
                 | CTESTRING more_opt"""
 
 def p_more_opt(p):
@@ -272,7 +272,7 @@ main
 {
     i = 5;
     j = 10;
-    print("The max value between i and j is: ");
+    print("The max value between i=", i, " and j is=", j, " is: ");
     max(i, j);
 
     while { check = i < 10; } do ( i + 1 );
