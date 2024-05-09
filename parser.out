@@ -1,0 +1,1822 @@
+Created by PLY (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> prog
+Rule 1     prog -> PROGRAM ID ENDINSTRUC vars funcs MAIN body END
+Rule 2     vars -> VAR variables
+Rule 3     vars -> empty
+Rule 4     variables -> list_ids COLON type ENDINSTRUC mas_vars
+Rule 5     list_ids -> ID mas_ids
+Rule 6     mas_ids -> COMMA list_ids
+Rule 7     mas_ids -> empty
+Rule 8     mas_vars -> variables
+Rule 9     mas_vars -> empty
+Rule 10    type -> INT
+Rule 11    type -> FLOAT
+Rule 12    funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+Rule 13    funcs -> empty
+Rule 14    list_params -> ID COLON type mas_params
+Rule 15    list_params -> empty
+Rule 16    mas_params -> COMMA list_params
+Rule 17    mas_params -> empty
+Rule 18    body -> LBRACE list_statements RBRACE
+Rule 19    statement -> assign
+Rule 20    statement -> condition
+Rule 21    statement -> cycle
+Rule 22    statement -> f_call
+Rule 23    statement -> print
+Rule 24    list_statements -> statement more_statements
+Rule 25    list_statements -> empty
+Rule 26    more_statements -> list_statements
+Rule 27    assign -> ID ASSIGN expresion ENDINSTRUC
+Rule 28    expresion -> exp mas_expresiones
+Rule 29    mas_expresiones -> GREATERTHAN exp
+Rule 30    mas_expresiones -> LESSTHAN exp
+Rule 31    mas_expresiones -> NOTEQUAL exp
+Rule 32    mas_expresiones -> empty
+Rule 33    exp -> termino mas_exp
+Rule 34    mas_exp -> PLUS exp
+Rule 35    mas_exp -> MINUS exp
+Rule 36    mas_exp -> empty
+Rule 37    termino -> factor mas_terminos
+Rule 38    mas_terminos -> TIMES termino
+Rule 39    mas_terminos -> DIVIDE termino
+Rule 40    mas_terminos -> empty
+Rule 41    factor -> LPAREN expresion RPAREN
+Rule 42    factor -> factor_opt
+Rule 43    factor -> PLUS factor_opt
+Rule 44    factor -> MINUS factor_opt
+Rule 45    factor_opt -> cte
+Rule 46    factor_opt -> ID
+Rule 47    cte -> CTEINT
+Rule 48    cte -> CTEFLOAT
+Rule 49    condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC
+Rule 50    else_block -> ELSE body
+Rule 51    else_block -> empty
+Rule 52    cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC
+Rule 53    f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC
+Rule 54    list_exp -> expresion mas_list_exp
+Rule 55    list_exp -> empty
+Rule 56    mas_list_exp -> COMMA list_exp
+Rule 57    mas_list_exp -> empty
+Rule 58    print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC
+Rule 59    print_opt -> expresion more_opt
+Rule 60    print_opt -> CTESTRING more_opt
+Rule 61    more_opt -> COMMA print_opt
+Rule 62    more_opt -> empty
+Rule 63    empty -> <empty>
+
+Terminals, with rules where they appear
+
+ASSIGN               : 27
+COLON                : 4 14
+COMMA                : 6 16 56 61
+CTEFLOAT             : 48
+CTEINT               : 47
+CTESTRING            : 60
+DIVIDE               : 39
+DO                   : 52
+ELSE                 : 50
+END                  : 1
+ENDINSTRUC           : 1 4 27 49 52 53 58
+FLOAT                : 11
+GREATERTHAN          : 29
+ID                   : 1 5 12 14 27 46 53
+IF                   : 49
+INT                  : 10
+LBRACE               : 18
+LBRACKET             : 12
+LESSTHAN             : 30
+LPAREN               : 12 41 49 52 53 58
+MAIN                 : 1
+MINUS                : 35 44
+NOTEQUAL             : 31
+PLUS                 : 34 43
+PRINT                : 58
+PROGRAM              : 1
+RBRACE               : 18
+RBRACKET             : 12
+RPAREN               : 12 41 49 52 53 58
+TIMES                : 38
+VAR                  : 2
+VOID                 : 12
+WHILE                : 52
+error                : 
+
+Nonterminals, with rules where they appear
+
+assign               : 19
+body                 : 1 12 49 50 52
+condition            : 20
+cte                  : 45
+cycle                : 21
+else_block           : 49
+empty                : 3 7 9 13 15 17 25 32 36 40 51 55 57 62
+exp                  : 28 29 30 31 34 35
+expresion            : 27 41 49 52 54 59
+f_call               : 22
+factor               : 37
+factor_opt           : 42 43 44
+funcs                : 1
+list_exp             : 53 56
+list_ids             : 4 6
+list_params          : 12 16
+list_statements      : 18 26
+mas_exp              : 33
+mas_expresiones      : 28
+mas_ids              : 5
+mas_list_exp         : 54
+mas_params           : 14
+mas_terminos         : 37
+mas_vars             : 4
+more_opt             : 59 60
+more_statements      : 24
+print                : 23
+print_opt            : 58 61
+prog                 : 0
+statement            : 24
+termino              : 33 38 39
+type                 : 4 14
+variables            : 2 8
+vars                 : 1 12
+
+
+state 0
+
+    (0) S' -> . prog
+    (1) prog -> . PROGRAM ID ENDINSTRUC vars funcs MAIN body END
+
+    PROGRAM         shift and go to state 2
+
+    prog                           shift and go to state 1
+
+state 1
+
+    (0) S' -> prog .
+
+
+
+state 2
+
+    (1) prog -> PROGRAM . ID ENDINSTRUC vars funcs MAIN body END
+
+    ID              shift and go to state 3
+
+
+state 3
+
+    (1) prog -> PROGRAM ID . ENDINSTRUC vars funcs MAIN body END
+
+    ENDINSTRUC      shift and go to state 4
+
+
+state 4
+
+    (1) prog -> PROGRAM ID ENDINSTRUC . vars funcs MAIN body END
+    (2) vars -> . VAR variables
+    (3) vars -> . empty
+    (63) empty -> .
+
+    VAR             shift and go to state 6
+    VOID            reduce using rule 63 (empty -> .)
+    MAIN            reduce using rule 63 (empty -> .)
+
+    vars                           shift and go to state 5
+    empty                          shift and go to state 7
+
+state 5
+
+    (1) prog -> PROGRAM ID ENDINSTRUC vars . funcs MAIN body END
+    (12) funcs -> . VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+    (13) funcs -> . empty
+    (63) empty -> .
+
+    VOID            shift and go to state 9
+    MAIN            reduce using rule 63 (empty -> .)
+
+    funcs                          shift and go to state 8
+    empty                          shift and go to state 10
+
+state 6
+
+    (2) vars -> VAR . variables
+    (4) variables -> . list_ids COLON type ENDINSTRUC mas_vars
+    (5) list_ids -> . ID mas_ids
+
+    ID              shift and go to state 13
+
+    variables                      shift and go to state 11
+    list_ids                       shift and go to state 12
+
+state 7
+
+    (3) vars -> empty .
+
+    VOID            reduce using rule 3 (vars -> empty .)
+    MAIN            reduce using rule 3 (vars -> empty .)
+    LBRACE          reduce using rule 3 (vars -> empty .)
+
+
+state 8
+
+    (1) prog -> PROGRAM ID ENDINSTRUC vars funcs . MAIN body END
+
+    MAIN            shift and go to state 14
+
+
+state 9
+
+    (12) funcs -> VOID . ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+
+    ID              shift and go to state 15
+
+
+state 10
+
+    (13) funcs -> empty .
+
+    MAIN            reduce using rule 13 (funcs -> empty .)
+
+
+state 11
+
+    (2) vars -> VAR variables .
+
+    VOID            reduce using rule 2 (vars -> VAR variables .)
+    MAIN            reduce using rule 2 (vars -> VAR variables .)
+    LBRACE          reduce using rule 2 (vars -> VAR variables .)
+
+
+state 12
+
+    (4) variables -> list_ids . COLON type ENDINSTRUC mas_vars
+
+    COLON           shift and go to state 16
+
+
+state 13
+
+    (5) list_ids -> ID . mas_ids
+    (6) mas_ids -> . COMMA list_ids
+    (7) mas_ids -> . empty
+    (63) empty -> .
+
+    COMMA           shift and go to state 18
+    COLON           reduce using rule 63 (empty -> .)
+
+    mas_ids                        shift and go to state 17
+    empty                          shift and go to state 19
+
+state 14
+
+    (1) prog -> PROGRAM ID ENDINSTRUC vars funcs MAIN . body END
+    (18) body -> . LBRACE list_statements RBRACE
+
+    LBRACE          shift and go to state 21
+
+    body                           shift and go to state 20
+
+state 15
+
+    (12) funcs -> VOID ID . LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+
+    LPAREN          shift and go to state 22
+
+
+state 16
+
+    (4) variables -> list_ids COLON . type ENDINSTRUC mas_vars
+    (10) type -> . INT
+    (11) type -> . FLOAT
+
+    INT             shift and go to state 24
+    FLOAT           shift and go to state 25
+
+    type                           shift and go to state 23
+
+state 17
+
+    (5) list_ids -> ID mas_ids .
+
+    COLON           reduce using rule 5 (list_ids -> ID mas_ids .)
+
+
+state 18
+
+    (6) mas_ids -> COMMA . list_ids
+    (5) list_ids -> . ID mas_ids
+
+    ID              shift and go to state 13
+
+    list_ids                       shift and go to state 26
+
+state 19
+
+    (7) mas_ids -> empty .
+
+    COLON           reduce using rule 7 (mas_ids -> empty .)
+
+
+state 20
+
+    (1) prog -> PROGRAM ID ENDINSTRUC vars funcs MAIN body . END
+
+    END             shift and go to state 27
+
+
+state 21
+
+    (18) body -> LBRACE . list_statements RBRACE
+    (24) list_statements -> . statement more_statements
+    (25) list_statements -> . empty
+    (19) statement -> . assign
+    (20) statement -> . condition
+    (21) statement -> . cycle
+    (22) statement -> . f_call
+    (23) statement -> . print
+    (63) empty -> .
+    (27) assign -> . ID ASSIGN expresion ENDINSTRUC
+    (49) condition -> . IF LPAREN expresion RPAREN body else_block ENDINSTRUC
+    (52) cycle -> . DO body WHILE LPAREN expresion RPAREN ENDINSTRUC
+    (53) f_call -> . ID LPAREN list_exp RPAREN ENDINSTRUC
+    (58) print -> . PRINT LPAREN print_opt RPAREN ENDINSTRUC
+
+    RBRACE          reduce using rule 63 (empty -> .)
+    ID              shift and go to state 36
+    IF              shift and go to state 37
+    DO              shift and go to state 38
+    PRINT           shift and go to state 39
+
+    list_statements                shift and go to state 28
+    statement                      shift and go to state 29
+    empty                          shift and go to state 30
+    assign                         shift and go to state 31
+    condition                      shift and go to state 32
+    cycle                          shift and go to state 33
+    f_call                         shift and go to state 34
+    print                          shift and go to state 35
+
+state 22
+
+    (12) funcs -> VOID ID LPAREN . list_params RPAREN LBRACKET vars body RBRACKET
+    (14) list_params -> . ID COLON type mas_params
+    (15) list_params -> . empty
+    (63) empty -> .
+
+    ID              shift and go to state 40
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    list_params                    shift and go to state 41
+    empty                          shift and go to state 42
+
+state 23
+
+    (4) variables -> list_ids COLON type . ENDINSTRUC mas_vars
+
+    ENDINSTRUC      shift and go to state 43
+
+
+state 24
+
+    (10) type -> INT .
+
+    ENDINSTRUC      reduce using rule 10 (type -> INT .)
+    COMMA           reduce using rule 10 (type -> INT .)
+    RPAREN          reduce using rule 10 (type -> INT .)
+
+
+state 25
+
+    (11) type -> FLOAT .
+
+    ENDINSTRUC      reduce using rule 11 (type -> FLOAT .)
+    COMMA           reduce using rule 11 (type -> FLOAT .)
+    RPAREN          reduce using rule 11 (type -> FLOAT .)
+
+
+state 26
+
+    (6) mas_ids -> COMMA list_ids .
+
+    COLON           reduce using rule 6 (mas_ids -> COMMA list_ids .)
+
+
+state 27
+
+    (1) prog -> PROGRAM ID ENDINSTRUC vars funcs MAIN body END .
+
+    $end            reduce using rule 1 (prog -> PROGRAM ID ENDINSTRUC vars funcs MAIN body END .)
+
+
+state 28
+
+    (18) body -> LBRACE list_statements . RBRACE
+
+    RBRACE          shift and go to state 44
+
+
+state 29
+
+    (24) list_statements -> statement . more_statements
+    (26) more_statements -> . list_statements
+    (24) list_statements -> . statement more_statements
+    (25) list_statements -> . empty
+    (19) statement -> . assign
+    (20) statement -> . condition
+    (21) statement -> . cycle
+    (22) statement -> . f_call
+    (23) statement -> . print
+    (63) empty -> .
+    (27) assign -> . ID ASSIGN expresion ENDINSTRUC
+    (49) condition -> . IF LPAREN expresion RPAREN body else_block ENDINSTRUC
+    (52) cycle -> . DO body WHILE LPAREN expresion RPAREN ENDINSTRUC
+    (53) f_call -> . ID LPAREN list_exp RPAREN ENDINSTRUC
+    (58) print -> . PRINT LPAREN print_opt RPAREN ENDINSTRUC
+
+    RBRACE          reduce using rule 63 (empty -> .)
+    ID              shift and go to state 36
+    IF              shift and go to state 37
+    DO              shift and go to state 38
+    PRINT           shift and go to state 39
+
+    statement                      shift and go to state 29
+    more_statements                shift and go to state 45
+    list_statements                shift and go to state 46
+    empty                          shift and go to state 30
+    assign                         shift and go to state 31
+    condition                      shift and go to state 32
+    cycle                          shift and go to state 33
+    f_call                         shift and go to state 34
+    print                          shift and go to state 35
+
+state 30
+
+    (25) list_statements -> empty .
+
+    RBRACE          reduce using rule 25 (list_statements -> empty .)
+
+
+state 31
+
+    (19) statement -> assign .
+
+    ID              reduce using rule 19 (statement -> assign .)
+    IF              reduce using rule 19 (statement -> assign .)
+    DO              reduce using rule 19 (statement -> assign .)
+    PRINT           reduce using rule 19 (statement -> assign .)
+    RBRACE          reduce using rule 19 (statement -> assign .)
+
+
+state 32
+
+    (20) statement -> condition .
+
+    ID              reduce using rule 20 (statement -> condition .)
+    IF              reduce using rule 20 (statement -> condition .)
+    DO              reduce using rule 20 (statement -> condition .)
+    PRINT           reduce using rule 20 (statement -> condition .)
+    RBRACE          reduce using rule 20 (statement -> condition .)
+
+
+state 33
+
+    (21) statement -> cycle .
+
+    ID              reduce using rule 21 (statement -> cycle .)
+    IF              reduce using rule 21 (statement -> cycle .)
+    DO              reduce using rule 21 (statement -> cycle .)
+    PRINT           reduce using rule 21 (statement -> cycle .)
+    RBRACE          reduce using rule 21 (statement -> cycle .)
+
+
+state 34
+
+    (22) statement -> f_call .
+
+    ID              reduce using rule 22 (statement -> f_call .)
+    IF              reduce using rule 22 (statement -> f_call .)
+    DO              reduce using rule 22 (statement -> f_call .)
+    PRINT           reduce using rule 22 (statement -> f_call .)
+    RBRACE          reduce using rule 22 (statement -> f_call .)
+
+
+state 35
+
+    (23) statement -> print .
+
+    ID              reduce using rule 23 (statement -> print .)
+    IF              reduce using rule 23 (statement -> print .)
+    DO              reduce using rule 23 (statement -> print .)
+    PRINT           reduce using rule 23 (statement -> print .)
+    RBRACE          reduce using rule 23 (statement -> print .)
+
+
+state 36
+
+    (27) assign -> ID . ASSIGN expresion ENDINSTRUC
+    (53) f_call -> ID . LPAREN list_exp RPAREN ENDINSTRUC
+
+    ASSIGN          shift and go to state 47
+    LPAREN          shift and go to state 48
+
+
+state 37
+
+    (49) condition -> IF . LPAREN expresion RPAREN body else_block ENDINSTRUC
+
+    LPAREN          shift and go to state 49
+
+
+state 38
+
+    (52) cycle -> DO . body WHILE LPAREN expresion RPAREN ENDINSTRUC
+    (18) body -> . LBRACE list_statements RBRACE
+
+    LBRACE          shift and go to state 21
+
+    body                           shift and go to state 50
+
+state 39
+
+    (58) print -> PRINT . LPAREN print_opt RPAREN ENDINSTRUC
+
+    LPAREN          shift and go to state 51
+
+
+state 40
+
+    (14) list_params -> ID . COLON type mas_params
+
+    COLON           shift and go to state 52
+
+
+state 41
+
+    (12) funcs -> VOID ID LPAREN list_params . RPAREN LBRACKET vars body RBRACKET
+
+    RPAREN          shift and go to state 53
+
+
+state 42
+
+    (15) list_params -> empty .
+
+    RPAREN          reduce using rule 15 (list_params -> empty .)
+
+
+state 43
+
+    (4) variables -> list_ids COLON type ENDINSTRUC . mas_vars
+    (8) mas_vars -> . variables
+    (9) mas_vars -> . empty
+    (4) variables -> . list_ids COLON type ENDINSTRUC mas_vars
+    (63) empty -> .
+    (5) list_ids -> . ID mas_ids
+
+    VOID            reduce using rule 63 (empty -> .)
+    MAIN            reduce using rule 63 (empty -> .)
+    LBRACE          reduce using rule 63 (empty -> .)
+    ID              shift and go to state 13
+
+    list_ids                       shift and go to state 12
+    mas_vars                       shift and go to state 54
+    variables                      shift and go to state 55
+    empty                          shift and go to state 56
+
+state 44
+
+    (18) body -> LBRACE list_statements RBRACE .
+
+    END             reduce using rule 18 (body -> LBRACE list_statements RBRACE .)
+    WHILE           reduce using rule 18 (body -> LBRACE list_statements RBRACE .)
+    ELSE            reduce using rule 18 (body -> LBRACE list_statements RBRACE .)
+    ENDINSTRUC      reduce using rule 18 (body -> LBRACE list_statements RBRACE .)
+    RBRACKET        reduce using rule 18 (body -> LBRACE list_statements RBRACE .)
+
+
+state 45
+
+    (24) list_statements -> statement more_statements .
+
+    RBRACE          reduce using rule 24 (list_statements -> statement more_statements .)
+
+
+state 46
+
+    (26) more_statements -> list_statements .
+
+    RBRACE          reduce using rule 26 (more_statements -> list_statements .)
+
+
+state 47
+
+    (27) assign -> ID ASSIGN . expresion ENDINSTRUC
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    expresion                      shift and go to state 58
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 48
+
+    (53) f_call -> ID LPAREN . list_exp RPAREN ENDINSTRUC
+    (54) list_exp -> . expresion mas_list_exp
+    (55) list_exp -> . empty
+    (28) expresion -> . exp mas_expresiones
+    (63) empty -> .
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    RPAREN          reduce using rule 63 (empty -> .)
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    list_exp                       shift and go to state 69
+    expresion                      shift and go to state 70
+    empty                          shift and go to state 71
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 49
+
+    (49) condition -> IF LPAREN . expresion RPAREN body else_block ENDINSTRUC
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    expresion                      shift and go to state 72
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 50
+
+    (52) cycle -> DO body . WHILE LPAREN expresion RPAREN ENDINSTRUC
+
+    WHILE           shift and go to state 73
+
+
+state 51
+
+    (58) print -> PRINT LPAREN . print_opt RPAREN ENDINSTRUC
+    (59) print_opt -> . expresion more_opt
+    (60) print_opt -> . CTESTRING more_opt
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    CTESTRING       shift and go to state 76
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    print_opt                      shift and go to state 74
+    expresion                      shift and go to state 75
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 52
+
+    (14) list_params -> ID COLON . type mas_params
+    (10) type -> . INT
+    (11) type -> . FLOAT
+
+    INT             shift and go to state 24
+    FLOAT           shift and go to state 25
+
+    type                           shift and go to state 77
+
+state 53
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN . LBRACKET vars body RBRACKET
+
+    LBRACKET        shift and go to state 78
+
+
+state 54
+
+    (4) variables -> list_ids COLON type ENDINSTRUC mas_vars .
+
+    VOID            reduce using rule 4 (variables -> list_ids COLON type ENDINSTRUC mas_vars .)
+    MAIN            reduce using rule 4 (variables -> list_ids COLON type ENDINSTRUC mas_vars .)
+    LBRACE          reduce using rule 4 (variables -> list_ids COLON type ENDINSTRUC mas_vars .)
+
+
+state 55
+
+    (8) mas_vars -> variables .
+
+    VOID            reduce using rule 8 (mas_vars -> variables .)
+    MAIN            reduce using rule 8 (mas_vars -> variables .)
+    LBRACE          reduce using rule 8 (mas_vars -> variables .)
+
+
+state 56
+
+    (9) mas_vars -> empty .
+
+    VOID            reduce using rule 9 (mas_vars -> empty .)
+    MAIN            reduce using rule 9 (mas_vars -> empty .)
+    LBRACE          reduce using rule 9 (mas_vars -> empty .)
+
+
+state 57
+
+    (46) factor_opt -> ID .
+
+    TIMES           reduce using rule 46 (factor_opt -> ID .)
+    DIVIDE          reduce using rule 46 (factor_opt -> ID .)
+    PLUS            reduce using rule 46 (factor_opt -> ID .)
+    MINUS           reduce using rule 46 (factor_opt -> ID .)
+    GREATERTHAN     reduce using rule 46 (factor_opt -> ID .)
+    LESSTHAN        reduce using rule 46 (factor_opt -> ID .)
+    NOTEQUAL        reduce using rule 46 (factor_opt -> ID .)
+    ENDINSTRUC      reduce using rule 46 (factor_opt -> ID .)
+    COMMA           reduce using rule 46 (factor_opt -> ID .)
+    RPAREN          reduce using rule 46 (factor_opt -> ID .)
+
+
+state 58
+
+    (27) assign -> ID ASSIGN expresion . ENDINSTRUC
+
+    ENDINSTRUC      shift and go to state 79
+
+
+state 59
+
+    (28) expresion -> exp . mas_expresiones
+    (29) mas_expresiones -> . GREATERTHAN exp
+    (30) mas_expresiones -> . LESSTHAN exp
+    (31) mas_expresiones -> . NOTEQUAL exp
+    (32) mas_expresiones -> . empty
+    (63) empty -> .
+
+    GREATERTHAN     shift and go to state 81
+    LESSTHAN        shift and go to state 82
+    NOTEQUAL        shift and go to state 83
+    ENDINSTRUC      reduce using rule 63 (empty -> .)
+    COMMA           reduce using rule 63 (empty -> .)
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    mas_expresiones                shift and go to state 80
+    empty                          shift and go to state 84
+
+state 60
+
+    (33) exp -> termino . mas_exp
+    (34) mas_exp -> . PLUS exp
+    (35) mas_exp -> . MINUS exp
+    (36) mas_exp -> . empty
+    (63) empty -> .
+
+    PLUS            shift and go to state 86
+    MINUS           shift and go to state 87
+    GREATERTHAN     reduce using rule 63 (empty -> .)
+    LESSTHAN        reduce using rule 63 (empty -> .)
+    NOTEQUAL        reduce using rule 63 (empty -> .)
+    ENDINSTRUC      reduce using rule 63 (empty -> .)
+    COMMA           reduce using rule 63 (empty -> .)
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    mas_exp                        shift and go to state 85
+    empty                          shift and go to state 88
+
+state 61
+
+    (37) termino -> factor . mas_terminos
+    (38) mas_terminos -> . TIMES termino
+    (39) mas_terminos -> . DIVIDE termino
+    (40) mas_terminos -> . empty
+    (63) empty -> .
+
+    TIMES           shift and go to state 90
+    DIVIDE          shift and go to state 91
+    PLUS            reduce using rule 63 (empty -> .)
+    MINUS           reduce using rule 63 (empty -> .)
+    GREATERTHAN     reduce using rule 63 (empty -> .)
+    LESSTHAN        reduce using rule 63 (empty -> .)
+    NOTEQUAL        reduce using rule 63 (empty -> .)
+    ENDINSTRUC      reduce using rule 63 (empty -> .)
+    COMMA           reduce using rule 63 (empty -> .)
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    mas_terminos                   shift and go to state 89
+    empty                          shift and go to state 92
+
+state 62
+
+    (41) factor -> LPAREN . expresion RPAREN
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    expresion                      shift and go to state 93
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 63
+
+    (42) factor -> factor_opt .
+
+    TIMES           reduce using rule 42 (factor -> factor_opt .)
+    DIVIDE          reduce using rule 42 (factor -> factor_opt .)
+    PLUS            reduce using rule 42 (factor -> factor_opt .)
+    MINUS           reduce using rule 42 (factor -> factor_opt .)
+    GREATERTHAN     reduce using rule 42 (factor -> factor_opt .)
+    LESSTHAN        reduce using rule 42 (factor -> factor_opt .)
+    NOTEQUAL        reduce using rule 42 (factor -> factor_opt .)
+    ENDINSTRUC      reduce using rule 42 (factor -> factor_opt .)
+    COMMA           reduce using rule 42 (factor -> factor_opt .)
+    RPAREN          reduce using rule 42 (factor -> factor_opt .)
+
+
+state 64
+
+    (43) factor -> PLUS . factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    factor_opt                     shift and go to state 94
+    cte                            shift and go to state 66
+
+state 65
+
+    (44) factor -> MINUS . factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    factor_opt                     shift and go to state 95
+    cte                            shift and go to state 66
+
+state 66
+
+    (45) factor_opt -> cte .
+
+    TIMES           reduce using rule 45 (factor_opt -> cte .)
+    DIVIDE          reduce using rule 45 (factor_opt -> cte .)
+    PLUS            reduce using rule 45 (factor_opt -> cte .)
+    MINUS           reduce using rule 45 (factor_opt -> cte .)
+    GREATERTHAN     reduce using rule 45 (factor_opt -> cte .)
+    LESSTHAN        reduce using rule 45 (factor_opt -> cte .)
+    NOTEQUAL        reduce using rule 45 (factor_opt -> cte .)
+    ENDINSTRUC      reduce using rule 45 (factor_opt -> cte .)
+    COMMA           reduce using rule 45 (factor_opt -> cte .)
+    RPAREN          reduce using rule 45 (factor_opt -> cte .)
+
+
+state 67
+
+    (47) cte -> CTEINT .
+
+    TIMES           reduce using rule 47 (cte -> CTEINT .)
+    DIVIDE          reduce using rule 47 (cte -> CTEINT .)
+    PLUS            reduce using rule 47 (cte -> CTEINT .)
+    MINUS           reduce using rule 47 (cte -> CTEINT .)
+    GREATERTHAN     reduce using rule 47 (cte -> CTEINT .)
+    LESSTHAN        reduce using rule 47 (cte -> CTEINT .)
+    NOTEQUAL        reduce using rule 47 (cte -> CTEINT .)
+    ENDINSTRUC      reduce using rule 47 (cte -> CTEINT .)
+    COMMA           reduce using rule 47 (cte -> CTEINT .)
+    RPAREN          reduce using rule 47 (cte -> CTEINT .)
+
+
+state 68
+
+    (48) cte -> CTEFLOAT .
+
+    TIMES           reduce using rule 48 (cte -> CTEFLOAT .)
+    DIVIDE          reduce using rule 48 (cte -> CTEFLOAT .)
+    PLUS            reduce using rule 48 (cte -> CTEFLOAT .)
+    MINUS           reduce using rule 48 (cte -> CTEFLOAT .)
+    GREATERTHAN     reduce using rule 48 (cte -> CTEFLOAT .)
+    LESSTHAN        reduce using rule 48 (cte -> CTEFLOAT .)
+    NOTEQUAL        reduce using rule 48 (cte -> CTEFLOAT .)
+    ENDINSTRUC      reduce using rule 48 (cte -> CTEFLOAT .)
+    COMMA           reduce using rule 48 (cte -> CTEFLOAT .)
+    RPAREN          reduce using rule 48 (cte -> CTEFLOAT .)
+
+
+state 69
+
+    (53) f_call -> ID LPAREN list_exp . RPAREN ENDINSTRUC
+
+    RPAREN          shift and go to state 96
+
+
+state 70
+
+    (54) list_exp -> expresion . mas_list_exp
+    (56) mas_list_exp -> . COMMA list_exp
+    (57) mas_list_exp -> . empty
+    (63) empty -> .
+
+    COMMA           shift and go to state 98
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    mas_list_exp                   shift and go to state 97
+    empty                          shift and go to state 99
+
+state 71
+
+    (55) list_exp -> empty .
+
+    RPAREN          reduce using rule 55 (list_exp -> empty .)
+
+
+state 72
+
+    (49) condition -> IF LPAREN expresion . RPAREN body else_block ENDINSTRUC
+
+    RPAREN          shift and go to state 100
+
+
+state 73
+
+    (52) cycle -> DO body WHILE . LPAREN expresion RPAREN ENDINSTRUC
+
+    LPAREN          shift and go to state 101
+
+
+state 74
+
+    (58) print -> PRINT LPAREN print_opt . RPAREN ENDINSTRUC
+
+    RPAREN          shift and go to state 102
+
+
+state 75
+
+    (59) print_opt -> expresion . more_opt
+    (61) more_opt -> . COMMA print_opt
+    (62) more_opt -> . empty
+    (63) empty -> .
+
+    COMMA           shift and go to state 104
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    more_opt                       shift and go to state 103
+    empty                          shift and go to state 105
+
+state 76
+
+    (60) print_opt -> CTESTRING . more_opt
+    (61) more_opt -> . COMMA print_opt
+    (62) more_opt -> . empty
+    (63) empty -> .
+
+    COMMA           shift and go to state 104
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    more_opt                       shift and go to state 106
+    empty                          shift and go to state 105
+
+state 77
+
+    (14) list_params -> ID COLON type . mas_params
+    (16) mas_params -> . COMMA list_params
+    (17) mas_params -> . empty
+    (63) empty -> .
+
+    COMMA           shift and go to state 108
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    mas_params                     shift and go to state 107
+    empty                          shift and go to state 109
+
+state 78
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET . vars body RBRACKET
+    (2) vars -> . VAR variables
+    (3) vars -> . empty
+    (63) empty -> .
+
+    VAR             shift and go to state 6
+    LBRACE          reduce using rule 63 (empty -> .)
+
+    vars                           shift and go to state 110
+    empty                          shift and go to state 7
+
+state 79
+
+    (27) assign -> ID ASSIGN expresion ENDINSTRUC .
+
+    ID              reduce using rule 27 (assign -> ID ASSIGN expresion ENDINSTRUC .)
+    IF              reduce using rule 27 (assign -> ID ASSIGN expresion ENDINSTRUC .)
+    DO              reduce using rule 27 (assign -> ID ASSIGN expresion ENDINSTRUC .)
+    PRINT           reduce using rule 27 (assign -> ID ASSIGN expresion ENDINSTRUC .)
+    RBRACE          reduce using rule 27 (assign -> ID ASSIGN expresion ENDINSTRUC .)
+
+
+state 80
+
+    (28) expresion -> exp mas_expresiones .
+
+    ENDINSTRUC      reduce using rule 28 (expresion -> exp mas_expresiones .)
+    COMMA           reduce using rule 28 (expresion -> exp mas_expresiones .)
+    RPAREN          reduce using rule 28 (expresion -> exp mas_expresiones .)
+
+
+state 81
+
+    (29) mas_expresiones -> GREATERTHAN . exp
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    exp                            shift and go to state 111
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 82
+
+    (30) mas_expresiones -> LESSTHAN . exp
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    exp                            shift and go to state 112
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 83
+
+    (31) mas_expresiones -> NOTEQUAL . exp
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    exp                            shift and go to state 113
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 84
+
+    (32) mas_expresiones -> empty .
+
+    ENDINSTRUC      reduce using rule 32 (mas_expresiones -> empty .)
+    COMMA           reduce using rule 32 (mas_expresiones -> empty .)
+    RPAREN          reduce using rule 32 (mas_expresiones -> empty .)
+
+
+state 85
+
+    (33) exp -> termino mas_exp .
+
+    GREATERTHAN     reduce using rule 33 (exp -> termino mas_exp .)
+    LESSTHAN        reduce using rule 33 (exp -> termino mas_exp .)
+    NOTEQUAL        reduce using rule 33 (exp -> termino mas_exp .)
+    ENDINSTRUC      reduce using rule 33 (exp -> termino mas_exp .)
+    COMMA           reduce using rule 33 (exp -> termino mas_exp .)
+    RPAREN          reduce using rule 33 (exp -> termino mas_exp .)
+
+
+state 86
+
+    (34) mas_exp -> PLUS . exp
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    exp                            shift and go to state 114
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 87
+
+    (35) mas_exp -> MINUS . exp
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    exp                            shift and go to state 115
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 88
+
+    (36) mas_exp -> empty .
+
+    GREATERTHAN     reduce using rule 36 (mas_exp -> empty .)
+    LESSTHAN        reduce using rule 36 (mas_exp -> empty .)
+    NOTEQUAL        reduce using rule 36 (mas_exp -> empty .)
+    ENDINSTRUC      reduce using rule 36 (mas_exp -> empty .)
+    COMMA           reduce using rule 36 (mas_exp -> empty .)
+    RPAREN          reduce using rule 36 (mas_exp -> empty .)
+
+
+state 89
+
+    (37) termino -> factor mas_terminos .
+
+    PLUS            reduce using rule 37 (termino -> factor mas_terminos .)
+    MINUS           reduce using rule 37 (termino -> factor mas_terminos .)
+    GREATERTHAN     reduce using rule 37 (termino -> factor mas_terminos .)
+    LESSTHAN        reduce using rule 37 (termino -> factor mas_terminos .)
+    NOTEQUAL        reduce using rule 37 (termino -> factor mas_terminos .)
+    ENDINSTRUC      reduce using rule 37 (termino -> factor mas_terminos .)
+    COMMA           reduce using rule 37 (termino -> factor mas_terminos .)
+    RPAREN          reduce using rule 37 (termino -> factor mas_terminos .)
+
+
+state 90
+
+    (38) mas_terminos -> TIMES . termino
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    termino                        shift and go to state 116
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 91
+
+    (39) mas_terminos -> DIVIDE . termino
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    termino                        shift and go to state 117
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 92
+
+    (40) mas_terminos -> empty .
+
+    PLUS            reduce using rule 40 (mas_terminos -> empty .)
+    MINUS           reduce using rule 40 (mas_terminos -> empty .)
+    GREATERTHAN     reduce using rule 40 (mas_terminos -> empty .)
+    LESSTHAN        reduce using rule 40 (mas_terminos -> empty .)
+    NOTEQUAL        reduce using rule 40 (mas_terminos -> empty .)
+    ENDINSTRUC      reduce using rule 40 (mas_terminos -> empty .)
+    COMMA           reduce using rule 40 (mas_terminos -> empty .)
+    RPAREN          reduce using rule 40 (mas_terminos -> empty .)
+
+
+state 93
+
+    (41) factor -> LPAREN expresion . RPAREN
+
+    RPAREN          shift and go to state 118
+
+
+state 94
+
+    (43) factor -> PLUS factor_opt .
+
+    TIMES           reduce using rule 43 (factor -> PLUS factor_opt .)
+    DIVIDE          reduce using rule 43 (factor -> PLUS factor_opt .)
+    PLUS            reduce using rule 43 (factor -> PLUS factor_opt .)
+    MINUS           reduce using rule 43 (factor -> PLUS factor_opt .)
+    GREATERTHAN     reduce using rule 43 (factor -> PLUS factor_opt .)
+    LESSTHAN        reduce using rule 43 (factor -> PLUS factor_opt .)
+    NOTEQUAL        reduce using rule 43 (factor -> PLUS factor_opt .)
+    ENDINSTRUC      reduce using rule 43 (factor -> PLUS factor_opt .)
+    COMMA           reduce using rule 43 (factor -> PLUS factor_opt .)
+    RPAREN          reduce using rule 43 (factor -> PLUS factor_opt .)
+
+
+state 95
+
+    (44) factor -> MINUS factor_opt .
+
+    TIMES           reduce using rule 44 (factor -> MINUS factor_opt .)
+    DIVIDE          reduce using rule 44 (factor -> MINUS factor_opt .)
+    PLUS            reduce using rule 44 (factor -> MINUS factor_opt .)
+    MINUS           reduce using rule 44 (factor -> MINUS factor_opt .)
+    GREATERTHAN     reduce using rule 44 (factor -> MINUS factor_opt .)
+    LESSTHAN        reduce using rule 44 (factor -> MINUS factor_opt .)
+    NOTEQUAL        reduce using rule 44 (factor -> MINUS factor_opt .)
+    ENDINSTRUC      reduce using rule 44 (factor -> MINUS factor_opt .)
+    COMMA           reduce using rule 44 (factor -> MINUS factor_opt .)
+    RPAREN          reduce using rule 44 (factor -> MINUS factor_opt .)
+
+
+state 96
+
+    (53) f_call -> ID LPAREN list_exp RPAREN . ENDINSTRUC
+
+    ENDINSTRUC      shift and go to state 119
+
+
+state 97
+
+    (54) list_exp -> expresion mas_list_exp .
+
+    RPAREN          reduce using rule 54 (list_exp -> expresion mas_list_exp .)
+
+
+state 98
+
+    (56) mas_list_exp -> COMMA . list_exp
+    (54) list_exp -> . expresion mas_list_exp
+    (55) list_exp -> . empty
+    (28) expresion -> . exp mas_expresiones
+    (63) empty -> .
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    RPAREN          reduce using rule 63 (empty -> .)
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    list_exp                       shift and go to state 120
+    expresion                      shift and go to state 70
+    empty                          shift and go to state 71
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 99
+
+    (57) mas_list_exp -> empty .
+
+    RPAREN          reduce using rule 57 (mas_list_exp -> empty .)
+
+
+state 100
+
+    (49) condition -> IF LPAREN expresion RPAREN . body else_block ENDINSTRUC
+    (18) body -> . LBRACE list_statements RBRACE
+
+    LBRACE          shift and go to state 21
+
+    body                           shift and go to state 121
+
+state 101
+
+    (52) cycle -> DO body WHILE LPAREN . expresion RPAREN ENDINSTRUC
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    expresion                      shift and go to state 122
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 102
+
+    (58) print -> PRINT LPAREN print_opt RPAREN . ENDINSTRUC
+
+    ENDINSTRUC      shift and go to state 123
+
+
+state 103
+
+    (59) print_opt -> expresion more_opt .
+
+    RPAREN          reduce using rule 59 (print_opt -> expresion more_opt .)
+
+
+state 104
+
+    (61) more_opt -> COMMA . print_opt
+    (59) print_opt -> . expresion more_opt
+    (60) print_opt -> . CTESTRING more_opt
+    (28) expresion -> . exp mas_expresiones
+    (33) exp -> . termino mas_exp
+    (37) termino -> . factor mas_terminos
+    (41) factor -> . LPAREN expresion RPAREN
+    (42) factor -> . factor_opt
+    (43) factor -> . PLUS factor_opt
+    (44) factor -> . MINUS factor_opt
+    (45) factor_opt -> . cte
+    (46) factor_opt -> . ID
+    (47) cte -> . CTEINT
+    (48) cte -> . CTEFLOAT
+
+    CTESTRING       shift and go to state 76
+    LPAREN          shift and go to state 62
+    PLUS            shift and go to state 64
+    MINUS           shift and go to state 65
+    ID              shift and go to state 57
+    CTEINT          shift and go to state 67
+    CTEFLOAT        shift and go to state 68
+
+    print_opt                      shift and go to state 124
+    expresion                      shift and go to state 75
+    exp                            shift and go to state 59
+    termino                        shift and go to state 60
+    factor                         shift and go to state 61
+    factor_opt                     shift and go to state 63
+    cte                            shift and go to state 66
+
+state 105
+
+    (62) more_opt -> empty .
+
+    RPAREN          reduce using rule 62 (more_opt -> empty .)
+
+
+state 106
+
+    (60) print_opt -> CTESTRING more_opt .
+
+    RPAREN          reduce using rule 60 (print_opt -> CTESTRING more_opt .)
+
+
+state 107
+
+    (14) list_params -> ID COLON type mas_params .
+
+    RPAREN          reduce using rule 14 (list_params -> ID COLON type mas_params .)
+
+
+state 108
+
+    (16) mas_params -> COMMA . list_params
+    (14) list_params -> . ID COLON type mas_params
+    (15) list_params -> . empty
+    (63) empty -> .
+
+    ID              shift and go to state 40
+    RPAREN          reduce using rule 63 (empty -> .)
+
+    list_params                    shift and go to state 125
+    empty                          shift and go to state 42
+
+state 109
+
+    (17) mas_params -> empty .
+
+    RPAREN          reduce using rule 17 (mas_params -> empty .)
+
+
+state 110
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars . body RBRACKET
+    (18) body -> . LBRACE list_statements RBRACE
+
+    LBRACE          shift and go to state 21
+
+    body                           shift and go to state 126
+
+state 111
+
+    (29) mas_expresiones -> GREATERTHAN exp .
+
+    ENDINSTRUC      reduce using rule 29 (mas_expresiones -> GREATERTHAN exp .)
+    COMMA           reduce using rule 29 (mas_expresiones -> GREATERTHAN exp .)
+    RPAREN          reduce using rule 29 (mas_expresiones -> GREATERTHAN exp .)
+
+
+state 112
+
+    (30) mas_expresiones -> LESSTHAN exp .
+
+    ENDINSTRUC      reduce using rule 30 (mas_expresiones -> LESSTHAN exp .)
+    COMMA           reduce using rule 30 (mas_expresiones -> LESSTHAN exp .)
+    RPAREN          reduce using rule 30 (mas_expresiones -> LESSTHAN exp .)
+
+
+state 113
+
+    (31) mas_expresiones -> NOTEQUAL exp .
+
+    ENDINSTRUC      reduce using rule 31 (mas_expresiones -> NOTEQUAL exp .)
+    COMMA           reduce using rule 31 (mas_expresiones -> NOTEQUAL exp .)
+    RPAREN          reduce using rule 31 (mas_expresiones -> NOTEQUAL exp .)
+
+
+state 114
+
+    (34) mas_exp -> PLUS exp .
+
+    GREATERTHAN     reduce using rule 34 (mas_exp -> PLUS exp .)
+    LESSTHAN        reduce using rule 34 (mas_exp -> PLUS exp .)
+    NOTEQUAL        reduce using rule 34 (mas_exp -> PLUS exp .)
+    ENDINSTRUC      reduce using rule 34 (mas_exp -> PLUS exp .)
+    COMMA           reduce using rule 34 (mas_exp -> PLUS exp .)
+    RPAREN          reduce using rule 34 (mas_exp -> PLUS exp .)
+
+
+state 115
+
+    (35) mas_exp -> MINUS exp .
+
+    GREATERTHAN     reduce using rule 35 (mas_exp -> MINUS exp .)
+    LESSTHAN        reduce using rule 35 (mas_exp -> MINUS exp .)
+    NOTEQUAL        reduce using rule 35 (mas_exp -> MINUS exp .)
+    ENDINSTRUC      reduce using rule 35 (mas_exp -> MINUS exp .)
+    COMMA           reduce using rule 35 (mas_exp -> MINUS exp .)
+    RPAREN          reduce using rule 35 (mas_exp -> MINUS exp .)
+
+
+state 116
+
+    (38) mas_terminos -> TIMES termino .
+
+    PLUS            reduce using rule 38 (mas_terminos -> TIMES termino .)
+    MINUS           reduce using rule 38 (mas_terminos -> TIMES termino .)
+    GREATERTHAN     reduce using rule 38 (mas_terminos -> TIMES termino .)
+    LESSTHAN        reduce using rule 38 (mas_terminos -> TIMES termino .)
+    NOTEQUAL        reduce using rule 38 (mas_terminos -> TIMES termino .)
+    ENDINSTRUC      reduce using rule 38 (mas_terminos -> TIMES termino .)
+    COMMA           reduce using rule 38 (mas_terminos -> TIMES termino .)
+    RPAREN          reduce using rule 38 (mas_terminos -> TIMES termino .)
+
+
+state 117
+
+    (39) mas_terminos -> DIVIDE termino .
+
+    PLUS            reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    MINUS           reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    GREATERTHAN     reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    LESSTHAN        reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    NOTEQUAL        reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    ENDINSTRUC      reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    COMMA           reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+    RPAREN          reduce using rule 39 (mas_terminos -> DIVIDE termino .)
+
+
+state 118
+
+    (41) factor -> LPAREN expresion RPAREN .
+
+    TIMES           reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    DIVIDE          reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    PLUS            reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    MINUS           reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    GREATERTHAN     reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    LESSTHAN        reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    NOTEQUAL        reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    ENDINSTRUC      reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    COMMA           reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+    RPAREN          reduce using rule 41 (factor -> LPAREN expresion RPAREN .)
+
+
+state 119
+
+    (53) f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .
+
+    ID              reduce using rule 53 (f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .)
+    IF              reduce using rule 53 (f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .)
+    DO              reduce using rule 53 (f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .)
+    PRINT           reduce using rule 53 (f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .)
+    RBRACE          reduce using rule 53 (f_call -> ID LPAREN list_exp RPAREN ENDINSTRUC .)
+
+
+state 120
+
+    (56) mas_list_exp -> COMMA list_exp .
+
+    RPAREN          reduce using rule 56 (mas_list_exp -> COMMA list_exp .)
+
+
+state 121
+
+    (49) condition -> IF LPAREN expresion RPAREN body . else_block ENDINSTRUC
+    (50) else_block -> . ELSE body
+    (51) else_block -> . empty
+    (63) empty -> .
+
+    ELSE            shift and go to state 128
+    ENDINSTRUC      reduce using rule 63 (empty -> .)
+
+    else_block                     shift and go to state 127
+    empty                          shift and go to state 129
+
+state 122
+
+    (52) cycle -> DO body WHILE LPAREN expresion . RPAREN ENDINSTRUC
+
+    RPAREN          shift and go to state 130
+
+
+state 123
+
+    (58) print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .
+
+    ID              reduce using rule 58 (print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .)
+    IF              reduce using rule 58 (print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .)
+    DO              reduce using rule 58 (print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .)
+    PRINT           reduce using rule 58 (print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .)
+    RBRACE          reduce using rule 58 (print -> PRINT LPAREN print_opt RPAREN ENDINSTRUC .)
+
+
+state 124
+
+    (61) more_opt -> COMMA print_opt .
+
+    RPAREN          reduce using rule 61 (more_opt -> COMMA print_opt .)
+
+
+state 125
+
+    (16) mas_params -> COMMA list_params .
+
+    RPAREN          reduce using rule 16 (mas_params -> COMMA list_params .)
+
+
+state 126
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body . RBRACKET
+
+    RBRACKET        shift and go to state 131
+
+
+state 127
+
+    (49) condition -> IF LPAREN expresion RPAREN body else_block . ENDINSTRUC
+
+    ENDINSTRUC      shift and go to state 132
+
+
+state 128
+
+    (50) else_block -> ELSE . body
+    (18) body -> . LBRACE list_statements RBRACE
+
+    LBRACE          shift and go to state 21
+
+    body                           shift and go to state 133
+
+state 129
+
+    (51) else_block -> empty .
+
+    ENDINSTRUC      reduce using rule 51 (else_block -> empty .)
+
+
+state 130
+
+    (52) cycle -> DO body WHILE LPAREN expresion RPAREN . ENDINSTRUC
+
+    ENDINSTRUC      shift and go to state 134
+
+
+state 131
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET .
+
+    MAIN            reduce using rule 12 (funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET .)
+
+
+state 132
+
+    (49) condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .
+
+    ID              reduce using rule 49 (condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .)
+    IF              reduce using rule 49 (condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .)
+    DO              reduce using rule 49 (condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .)
+    PRINT           reduce using rule 49 (condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .)
+    RBRACE          reduce using rule 49 (condition -> IF LPAREN expresion RPAREN body else_block ENDINSTRUC .)
+
+
+state 133
+
+    (50) else_block -> ELSE body .
+
+    ENDINSTRUC      reduce using rule 50 (else_block -> ELSE body .)
+
+
+state 134
+
+    (52) cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .
+
+    ID              reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+    IF              reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+    DO              reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+    PRINT           reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+    RBRACE          reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+

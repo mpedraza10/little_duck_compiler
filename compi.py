@@ -110,8 +110,8 @@ lexer = lex.lex()
 
 # Define parser precedence
 precedence = (
-    ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'PLUS', 'MINUS'),
 )
 
 def p_prog(p):
@@ -250,7 +250,7 @@ def p_error(p):
     print("Error de sintaxis en la entrada:", p)
 
 # Build pareser
-parser = yacc.yacc(start="prog")
+parser = yacc.yacc(start="prog", debug=True)
 
 # Test
 basic_program_data = """
@@ -301,7 +301,7 @@ result = parser.parse(basic_program_data)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
-print(basic_program_data)
+print(result)
 print("")
 print("------------------------------------------------------------")
 print("")
