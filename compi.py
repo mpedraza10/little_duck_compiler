@@ -86,7 +86,7 @@ def t_CTEINT(t):
 
 # Define a rule for strings
 def t_CTESTRING(t):
-    r'"[a-zA-Z_][a-zA-Z_0-9]*"'
+    r'"([^"]*)"'
     t.value = str(t.value)
     return t
 
@@ -250,7 +250,7 @@ def p_error(p):
     print("Error de sintaxis en la entrada:", p)
 
 # Build pareser
-parser = yacc.yacc(start="prog", debug=True)
+parser = yacc.yacc(start="prog")
 
 # Test
 basic_program_data = """
@@ -272,6 +272,7 @@ main
 {
     i = 5;
     j = 10;
+    print("The max value between i and j is: ");
     max(i, j);
 
     while { check = i < 10; } do ( i + 1 );
