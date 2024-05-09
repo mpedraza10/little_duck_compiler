@@ -218,7 +218,7 @@ def p_else_block(p):
             | empty"""
 
 def p_cycle(p):
-    "cycle : WHILE body DO LPAREN expresion RPAREN ENDINSTRUC"
+    "cycle : DO body WHILE LPAREN expresion RPAREN ENDINSTRUC"
 
 def p_f_call(p):
     "f_call : ID LPAREN list_exp RPAREN ENDINSTRUC"
@@ -275,7 +275,7 @@ main
     print("The max value between i=", i, " and j is=", j, " is: ");
     max(i, j);
 
-    while { check = i < 10; } do ( i + 1 );
+    do { i = i + 1; } while ( i < j );
 }
 end
 """
