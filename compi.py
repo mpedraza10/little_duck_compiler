@@ -140,7 +140,7 @@ def p_type(p):
             | FLOAT"""
 
 def p_funcs(p):
-    """funcs : VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+    """funcs : VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
             | empty"""
 
 def p_list_params(p):

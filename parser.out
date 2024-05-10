@@ -14,7 +14,7 @@ Rule 8     mas_vars -> variables
 Rule 9     mas_vars -> empty
 Rule 10    type -> INT
 Rule 11    type -> FLOAT
-Rule 12    funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+Rule 12    funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
 Rule 13    funcs -> empty
 Rule 14    list_params -> ID COLON type mas_params
 Rule 15    list_params -> empty
@@ -79,7 +79,7 @@ DIVIDE               : 39
 DO                   : 52
 ELSE                 : 50
 END                  : 1
-ENDINSTRUC           : 1 4 27 49 52 53 58
+ENDINSTRUC           : 1 4 12 27 49 52 53 58
 FLOAT                : 11
 GREATERTHAN          : 29
 ID                   : 1 5 12 14 27 46 53
@@ -188,7 +188,7 @@ state 4
 state 5
 
     (1) prog -> PROGRAM ID ENDINSTRUC vars . funcs MAIN body END
-    (12) funcs -> . VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+    (12) funcs -> . VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
     (13) funcs -> . empty
     (63) empty -> .
 
@@ -227,7 +227,7 @@ state 8
 
 state 9
 
-    (12) funcs -> VOID . ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+    (12) funcs -> VOID . ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
 
     ID              shift and go to state 15
 
@@ -279,7 +279,7 @@ state 14
 
 state 15
 
-    (12) funcs -> VOID ID . LPAREN list_params RPAREN LBRACKET vars body RBRACKET
+    (12) funcs -> VOID ID . LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
 
     LPAREN          shift and go to state 22
 
@@ -359,7 +359,7 @@ state 21
 
 state 22
 
-    (12) funcs -> VOID ID LPAREN . list_params RPAREN LBRACKET vars body RBRACKET
+    (12) funcs -> VOID ID LPAREN . list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
     (14) list_params -> . ID COLON type mas_params
     (15) list_params -> . empty
     (63) empty -> .
@@ -553,7 +553,7 @@ state 40
 
 state 41
 
-    (12) funcs -> VOID ID LPAREN list_params . RPAREN LBRACKET vars body RBRACKET
+    (12) funcs -> VOID ID LPAREN list_params . RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
 
     RPAREN          shift and go to state 53
 
@@ -755,7 +755,7 @@ state 52
 
 state 53
 
-    (12) funcs -> VOID ID LPAREN list_params RPAREN . LBRACKET vars body RBRACKET
+    (12) funcs -> VOID ID LPAREN list_params RPAREN . LBRACKET vars body RBRACKET ENDINSTRUC
 
     LBRACKET        shift and go to state 78
 
@@ -1083,7 +1083,7 @@ state 77
 
 state 78
 
-    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET . vars body RBRACKET
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET . vars body RBRACKET ENDINSTRUC
     (2) vars -> . VAR variables
     (3) vars -> . empty
     (63) empty -> .
@@ -1583,7 +1583,7 @@ state 109
 
 state 110
 
-    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars . body RBRACKET
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars . body RBRACKET ENDINSTRUC
     (18) body -> . LBRACE list_statements RBRACE
 
     LBRACE          shift and go to state 21
@@ -1750,7 +1750,7 @@ state 125
 
 state 126
 
-    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body . RBRACKET
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body . RBRACKET ENDINSTRUC
 
     RBRACKET        shift and go to state 131
 
@@ -1787,9 +1787,9 @@ state 130
 
 state 131
 
-    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET .
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET . ENDINSTRUC
 
-    MAIN            reduce using rule 12 (funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET .)
+    ENDINSTRUC      shift and go to state 135
 
 
 state 132
@@ -1819,4 +1819,11 @@ state 134
     DO              reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
     PRINT           reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
     RBRACE          reduce using rule 52 (cycle -> DO body WHILE LPAREN expresion RPAREN ENDINSTRUC .)
+
+
+state 135
+
+    (12) funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC .
+
+    MAIN            reduce using rule 12 (funcs -> VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC .)
 
