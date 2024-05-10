@@ -266,7 +266,7 @@ void max(i: int, j: int) [
             print(j);
         };
     }
-]
+];
 
 main
 {
