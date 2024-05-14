@@ -2,6 +2,69 @@
 import lex
 import yacc
 
+# ------------------------------------------------- Tabla de consideraciones semanticas (cubo semantico) -------------------------------------------------
+
+# Definir los tipos y operadores
+tipos = ['int', 'float', 'bool']
+operadores = ['+', '-', '*', '/', '!=', '<', '>']
+
+# Crear un cubo semántico vacío
+cubo_semantico = {}
+
+# Inicializar el cubo semántico
+for tipo1 in tipos:
+    cubo_semantico[tipo1] = {}
+    for tipo2 in tipos:
+        cubo_semantico[tipo1][tipo2] = {}
+        for operador in operadores:
+            cubo_semantico[tipo1][tipo2][operador] = None
+
+# Ejemplo de llenado del cubo semántico para algunos operadores
+cubo_semantico['int']['int']['+'] = 'int'
+cubo_semantico['int']['int']['-'] = 'int'
+cubo_semantico['int']['int']['*'] = 'int'
+cubo_semantico['int']['int']['/'] = 'float'
+cubo_semantico['int']['float']['+'] = 'float'
+cubo_semantico['float']['int']['+'] = 'float'
+cubo_semantico['int']['float']['-'] = 'float'
+cubo_semantico['float']['int']['-'] = 'float'
+cubo_semantico['int']['float']['-'] = 'float'
+cubo_semantico['float']['int']['-'] = 'float'
+cubo_semantico['int']['float']['*'] = 'float'
+cubo_semantico['float']['int']['*'] = 'float'
+cubo_semantico['int']['float']['/'] = 'float'
+cubo_semantico['float']['int']['/'] = 'float'
+
+# Ejemplo para operadores relacionales
+cubo_semantico['int']['int']['!='] = 'bool'
+cubo_semantico['int']['int']['<'] = 'bool'
+cubo_semantico['int']['int']['>'] = 'bool'
+
+def obtener_tipo_resultado(operando1, operando2, operador):
+    tipo1 = type(operando1).__name__
+    tipo2 = type(operando2).__name__
+
+    # Verificar si los tipos y el operador están en el cubo semántico
+    if tipo1 in cubo_semantico and tipo2 in cubo_semantico[tipo1] and operador in cubo_semantico[tipo1][tipo2]:
+        resultado = cubo_semantico[tipo1][tipo2][operador]
+        if resultado:
+            return resultado
+        else:
+            raise TypeError(f"Operación inválida: {tipo1} {operador} {tipo2}")
+    else:
+        raise TypeError(f"Operación inválida o no soportada: {tipo1} {operador} {tipo2}")
+
+# Ejemplo de uso
+"""
+try:
+    tipo_res = obtener_tipo_resultado(1, "a", '+')
+    print(f"Resultado tipo: {tipo_res}")
+except TypeError as e:
+    print(e)
+"""
+
+# ------------------------------------------------- Lexico -------------------------------------------------
+
 # Define tokens
 tokens = (
     "ID",
@@ -112,47 +175,78 @@ lexer = lex.lex()
 precedence = (
     ('left', 'TIMES', 'DIVIDE'),
     ('left', 'PLUS', 'MINUS'),
+    ('right', 'UPLUS'), # Unary plus
+    ('right', 'UMINUS'), # Unary minus
 )
 
 def p_prog(p):
     "prog : PROGRAM ID ENDINSTRUC vars funcs MAIN body END"
+    p[0] = ('prog', p[2], p[4], p[5], p[7])
 
 def p_vars(p):
     """vars : VAR variables
             | empty"""
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = None
 
 def p_variables(p):
     "variables : list_ids COLON type ENDINSTRUC mas_vars"
+    p[0] = ('vars', p[1], p[3], p[5])
 
 def p_list_ids(p):
     "list_ids : ID mas_ids"
+    p[0] = [p[1]] + p[2]
 
 def p_mas_ids(p):
     """mas_ids : COMMA list_ids
                 | empty"""
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = []
 
 def p_mas_vars(p):
     """mas_vars : variables
                 | empty"""
+    if p[1] is not None:
+        p[0] = p[1]
+    else:
+        p[0] = []
 
 def p_type(p):
     """type : INT
             | FLOAT"""
+    p[0] = p[1]
 
 def p_funcs(p):
     """funcs : VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
             | empty"""
+    if len(p) == 11:
+        p[0] = ('func', p[2], p[4], p[7], p[8])
+    else:
+        p[0] = None
 
 def p_list_params(p):
     """list_params : ID COLON type mas_params
                     | empty"""
+    if len(p) == 5:
+        p[0] = [(p[1], p[3])] + p[4]
+    else:
+        p[0] = []
 
 def p_mas_params(p):
     """mas_params : COMMA list_params
                     | empty"""
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = []
 
 def p_body(p):
     "body : LBRACE list_statements RBRACE"
+    p[0] = p[2]
 
 def p_statement(p):
     """statement : assign
@@ -160,87 +254,151 @@ def p_statement(p):
                 | cycle
                 | f_call
                 | print"""
+    p[0] = p[1]
 
 def p_list_statements(p):
     """list_statements : statement more_statements
                         | empty"""
+    if len(p) == 3:
+        p[0] = [p[1]] + p[2]
+    else:
+        p[0] = []
 
 def p_more_statements(p):
     "more_statements : list_statements"
+    p[0] = p[1]
 
 def p_assign(p):
     "assign : ID ASSIGN expresion ENDINSTRUC"
+    p[0] = ('assign', p[1], p[3])
 
 def p_expresion(p):
     "expresion : exp mas_expresiones"
+    if p[2] is None:
+        p[0] = p[1]
+    else:
+        operator, right_exp = p[2]
+        p[0] = ('rel_op', operator, p[1], right_exp)
 
 def p_mas_expresiones(p):
     """mas_expresiones : GREATERTHAN exp
                         | LESSTHAN exp
                         | NOTEQUAL exp
                         | empty"""
+    if len(p) == 3:
+        p[0] = (p[1], p[2])
+    else:
+        p[0] = None
 
 def p_exp(p):
     "exp : termino mas_exp"
+    if len(p) == 3:
+        p[0] = (p[1], p[2])
+    else:
+        p[0] = None
 
 def p_mas_exp(p):
     """mas_exp : PLUS exp
                 | MINUS exp
                 | empty"""
+    if p[1] != None:
+        p[0] = (p[1], p[2])
 
 def p_termino(p):
     "termino : factor mas_terminos"
+    if p[2] is None:
+        p[0] = p[1]
+    else:
+        operator, right_termino = p[2]
+        p[0] = ('mul_op', operator, p[1], right_termino)
+
 
 def p_mas_terminos(p):
     """mas_terminos : TIMES termino
                     | DIVIDE termino
                     | empty"""
+    if len(p) == 3:
+        p[0] = (p[1], p[2])
+    else:
+        p[0] = None
 
 def p_factor(p):
     """factor : LPAREN expresion RPAREN
                 | factor_opt
-                | PLUS factor_opt
-                | MINUS factor_opt"""
+                | PLUS factor_opt %prec UPLUS
+                | MINUS factor_opt %prec UMINUS"""
+    if len(p) == 4:
+        p[0] = p[2]
+    elif len(p) == 3:
+        p[0] = ('unary_op', p[1], p[2])
+    else:
+        p[0] = p[1]
 
 def p_factor_opt(p):
     """factor_opt : cte
                     | ID"""
+    p[0] = p[1]
 
 def p_cte(p):
     """cte : CTEINT
             | CTEFLOAT"""
+    p[0] = p[1]
 
 def p_condition(p):
     "condition : IF LPAREN expresion RPAREN body else_block ENDINSTRUC"
+    p[0] = ('if', p[3], p[5], p[6])
 
 def p_else_block(p):
     """else_block : ELSE body
             | empty"""
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = None
 
 def p_cycle(p):
     "cycle : DO body WHILE LPAREN expresion RPAREN ENDINSTRUC"
+    p[0] = ('do_while', p[2], p[5])
 
 def p_f_call(p):
     "f_call : ID LPAREN list_exp RPAREN ENDINSTRUC"
+    p[0] = ('f_call', p[1], p[3])
 
 def p_list_exp(p):
     """list_exp : expresion mas_list_exp
                 | empty"""
+    if len(p) == 3:
+        p[0] = [p[1]] + p[2]
+    else:
+        p[0] = []
 
 def p_mas_list_exp(p):
     """mas_list_exp : COMMA list_exp
                     | empty"""
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = []
 
 def p_print(p):
     "print : PRINT LPAREN print_opt RPAREN ENDINSTRUC"
+    p[0] = ('print', p[3])
 
 def p_print_opt(p):
     """print_opt : expresion more_opt
                 | CTESTRING more_opt"""
+    if isinstance(p[1], str):
+        p[0] = ('string', p[1], p[2])
+    else:
+        p[0] = ('exp', p[1], p[2])
 
 def p_more_opt(p):
     """more_opt : COMMA print_opt
                 | empty"""
+    if len(p) == 3:
+        p[0] = [p[2]]
+    else:
+        p[0] = []
 
 def p_empty(p):
     'empty :'
@@ -252,7 +410,82 @@ def p_error(p):
 # Build pareser
 parser = yacc.yacc(start="prog", debug=True)
 
-# Test
+# ------------------------------------------------- Evaluation -------------------------------------------------
+def evaluate(node, env=None):
+    if env is None:
+        env = {}
+
+    if isinstance(node, tuple):
+        if node[0] == 'prog':
+            _, prog_id, vars, funcs, body = node
+            evaluate(vars, env)
+            evaluate(funcs, env)
+            return evaluate(body, env)
+        elif node[0] == 'vars':
+            _, var_list, var_type, more_vars = node
+            for var in var_list:
+                env[var] = {'type': var_type, 'value': None}
+            return evaluate(more_vars, env)
+        elif node[0] == 'assign':
+            _, var, expr = node
+            env[var]['value'] = evaluate(expr, env)
+        elif node[0] == 'if':
+            _, condition, if_body, else_body = node
+            if evaluate(condition, env):
+                return evaluate(if_body, env)
+            elif else_body:
+                return evaluate(else_body, env)
+        elif node[0] == 'do_while':
+            _, body, condition = node
+            while True:
+                evaluate(body, env)
+                if not evaluate(condition, env):
+                    break
+        elif node[0] == 'f_call':
+            _, func_id, params = node
+            # Placeholder for function call logic
+            pass
+        elif node[0] == 'print':
+            _, print_item = node
+            if print_item[0] == 'string':
+                print(print_item[1])
+            elif print_item[0] == 'exp':
+                print(evaluate(print_item[1], env))
+        elif node[0] == 'add_op':
+            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
+            if operator == '+':
+                return left + right
+            elif operator == '-':
+                return left - right
+        elif node[0] == 'mul_op':
+            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
+            if operator == '*':
+                return left * right
+            elif operator == '/':
+                return left / right
+        elif node[0] == 'rel_op':
+            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
+            if operator == '>':
+                return left > right
+            elif operator == '<':
+                return left < right
+            elif operator == '!=':
+                return left != right
+        elif node[0] == 'unary_op':
+            operator, value = node[1], evaluate(node[2], env)
+            if operator == '+':
+                return value
+            elif operator == '-':
+                return -value
+    else:
+        if isinstance(node, (int, float)):
+            return node
+        elif isinstance(node, str):
+            if node in env:
+                return env[node]['value']
+            return node
+
+# ------------------------------------------------- Test -------------------------------------------------
 basic_program_data = """
 program test;
 
@@ -279,9 +512,20 @@ main
 }
 end
 """
+test = """
+program test2;
+
+var i: int;
+
+main
+{
+    i = 5 * 2;
+}
+end
+"""
 
 # Give the lexer some input
-lexer.input(basic_program_data)
+lexer.input(test)
 
 # Tokenize
 print("")
@@ -297,11 +541,13 @@ print("-------------------------------------------------------------")
 print("")
 
 # Parse the input and get the results
-result = parser.parse(basic_program_data)
+parse_tree = parser.parse(test, debug=True)
+result = evaluate(parse_tree)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
-print(result)
+print("Parse Tree: ", parse_tree)
+print("Result: ", result)
 print("")
 print("------------------------------------------------------------")
 print("")
