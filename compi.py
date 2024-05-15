@@ -288,7 +288,7 @@ def p_expresion(p):
         p[0] = p[1]
     else:
         operator, right_exp = p[2]
-        p[0] = ('rel_op', operator, p[1], right_exp)
+        p[0] = (operator, p[1], right_exp)
 
 def p_mas_expresiones(p):
     """mas_expresiones : GREATERTHAN exp
@@ -320,7 +320,7 @@ def p_termino(p):
         p[0] = p[1]
     else:
         operator, right_termino = p[2]
-        p[0] = ('mul_op', operator, p[1], right_termino)
+        p[0] = (operator, p[1], right_termino)
 
 
 def p_mas_terminos(p):
@@ -340,7 +340,7 @@ def p_factor(p):
     if len(p) == 4:
         p[0] = p[2]
     elif len(p) == 3:
-        p[0] = ('unary_op', p[1], p[2])
+        p[0] = (p[1], p[2])
     else:
         p[0] = p[1]
 
@@ -420,81 +420,6 @@ def p_error(p):
 # Build pareser
 parser = yacc.yacc(start="prog", debug=True)
 
-# ------------------------------------------------- Evaluation -------------------------------------------------
-def evaluate(node, env=None):
-    if env is None:
-        env = {}
-
-    if isinstance(node, tuple):
-        if node[0] == 'prog':
-            _, prog_id, vars, funcs, body = node
-            evaluate(vars, env)
-            evaluate(funcs, env)
-            return evaluate(body, env)
-        elif node[0] == 'vars':
-            _, var_list, var_type, more_vars = node
-            for var in var_list:
-                env[var] = {'type': var_type, 'value': None}
-            return evaluate(more_vars, env)
-        elif node[0] == 'assign':
-            _, var, expr = node
-            env[var]['value'] = evaluate(expr, env)
-        elif node[0] == 'if':
-            _, condition, if_body, else_body = node
-            if evaluate(condition, env):
-                return evaluate(if_body, env)
-            elif else_body:
-                return evaluate(else_body, env)
-        elif node[0] == 'do_while':
-            _, body, condition = node
-            while True:
-                evaluate(body, env)
-                if not evaluate(condition, env):
-                    break
-        elif node[0] == 'f_call':
-            _, func_id, params = node
-            # Placeholder for function call logic
-            pass
-        elif node[0] == 'print':
-            _, print_item = node
-            if print_item[0] == 'string':
-                print(print_item[1])
-            elif print_item[0] == 'exp':
-                print(evaluate(print_item[1], env))
-        elif node[0] == 'add_op':
-            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
-            if operator == '+':
-                return left + right
-            elif operator == '-':
-                return left - right
-        elif node[0] == 'mul_op':
-            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
-            if operator == '*':
-                return left * right
-            elif operator == '/':
-                return left / right
-        elif node[0] == 'rel_op':
-            operator, left, right = node[1], evaluate(node[2], env), evaluate(node[3], env)
-            if operator == '>':
-                return left > right
-            elif operator == '<':
-                return left < right
-            elif operator == '!=':
-                return left != right
-        elif node[0] == 'unary_op':
-            operator, value = node[1], evaluate(node[2], env)
-            if operator == '+':
-                return value
-            elif operator == '-':
-                return -value
-    else:
-        if isinstance(node, (int, float)):
-            return node
-        elif isinstance(node, str):
-            if node in env:
-                return env[node]['value']
-            return node
-
 # ------------------------------------------------- Test -------------------------------------------------
 basic_program_data = """
 program test;
@@ -552,12 +477,10 @@ print("")
 
 # Parse the input and get the results
 parse_tree = parser.parse(test, debug=True)
-result = evaluate(parse_tree)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
 print("Parse Tree: ", parse_tree)
-print("Result: ", result)
 print("")
 print("------------------------------------------------------------")
 print("")
