@@ -1,11 +1,12 @@
 # Imports
 import lex
 import yacc
+from collections import deque
 
 # ------------------------------------------------- Tabla de consideraciones semanticas (cubo semantico) -------------------------------------------------
 
 # Definir los tipos y operadores
-tipos = ['int', 'float']
+tipos = ['int', 'float', 'bool']
 operadores = ['+', '-', '*', '/', '!=', '<', '>']
 
 # Crear un cubo semántico vacío
@@ -36,9 +37,9 @@ cubo_semantico['int']['float']['/'] = 'float'
 cubo_semantico['float']['int']['/'] = 'float'
 
 # Ejemplo para operadores relacionales
-cubo_semantico['int']['int']['!='] = 'int'
-cubo_semantico['int']['int']['<'] = 'int'
-cubo_semantico['int']['int']['>'] = 'int'
+cubo_semantico['int']['int']['!='] = 'bool'
+cubo_semantico['int']['int']['<'] = 'bool'
+cubo_semantico['int']['int']['>'] = 'bool'
 
 def obtener_tipo_resultado(operando1, operando2, operador):
     tipo1 = type(operando1).__name__
@@ -68,8 +69,8 @@ except TypeError as e:
 directorio_funciones = {
     'global': {
         'type': 'void',
-        'parametros': [],
-        'variables': "global_vars"
+        'param': [],
+        'vars': "global_vars"
     }
 }
 
@@ -176,18 +177,7 @@ def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-# Build the lexer
-lexer = lex.lex()
-
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
-
-# Define parser precedence
-precedence = (
-    ('left', 'TIMES', 'DIVIDE'),
-    ('left', 'PLUS', 'MINUS'),
-    ('right', 'UPLUS'), # Unary plus
-    ('right', 'UMINUS'), # Unary minus
-)
 
 def p_prog(p):
     "prog : PROGRAM ID ENDINSTRUC vars funcs MAIN body END"
@@ -335,8 +325,8 @@ def p_mas_terminos(p):
 def p_factor(p):
     """factor : LPAREN expresion RPAREN
                 | factor_opt
-                | PLUS factor_opt %prec UPLUS
-                | MINUS factor_opt %prec UMINUS"""
+                | PLUS factor_opt
+                | MINUS factor_opt"""
     if len(p) == 4:
         p[0] = p[2]
     elif len(p) == 3:
@@ -417,9 +407,6 @@ def p_empty(p):
 def p_error(p):
     print("Error de sintaxis en la entrada:", p)
 
-# Build pareser
-parser = yacc.yacc(start="prog", debug=True)
-
 # ------------------------------------------------- Test -------------------------------------------------
 basic_program_data = """
 program test;
@@ -459,8 +446,14 @@ main
 end
 """
 
+# Build the lexer
+lexer = lex.lex()
+
 # Give the lexer some input
 lexer.input(test)
+
+# Build parser
+parser = yacc.yacc(start="prog", debug=True)
 
 # Tokenize
 print("")
