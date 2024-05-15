@@ -5,7 +5,7 @@ import yacc
 # ------------------------------------------------- Tabla de consideraciones semanticas (cubo semantico) -------------------------------------------------
 
 # Definir los tipos y operadores
-tipos = ['int', 'float', 'bool']
+tipos = ['int', 'float']
 operadores = ['+', '-', '*', '/', '!=', '<', '>']
 
 # Crear un cubo semántico vacío
@@ -36,9 +36,9 @@ cubo_semantico['int']['float']['/'] = 'float'
 cubo_semantico['float']['int']['/'] = 'float'
 
 # Ejemplo para operadores relacionales
-cubo_semantico['int']['int']['!='] = 'bool'
-cubo_semantico['int']['int']['<'] = 'bool'
-cubo_semantico['int']['int']['>'] = 'bool'
+cubo_semantico['int']['int']['!='] = 'int'
+cubo_semantico['int']['int']['<'] = 'int'
+cubo_semantico['int']['int']['>'] = 'int'
 
 def obtener_tipo_resultado(operando1, operando2, operador):
     tipo1 = type(operando1).__name__
@@ -62,6 +62,16 @@ try:
 except TypeError as e:
     print(e)
 """
+
+# ------------------------------------------------- Directorio de funciones y variables -------------------------------------------------
+
+directorio_funciones = {
+    'global': {
+        'type': 'void',
+        'parametros': [],
+        'variables': "global_vars"
+    }
+}
 
 # ------------------------------------------------- Lexico -------------------------------------------------
 
