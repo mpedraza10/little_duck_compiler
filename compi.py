@@ -2,7 +2,6 @@
 import lex
 import yacc
 from collections import deque
-import re
 
 # ------------------------------------------------- Tabla de consideraciones semanticas (cubo semantico) -------------------------------------------------
 
@@ -73,24 +72,48 @@ current_scope = 'global'
 
 # Function that returns the expected type of an operation
 def get_expected_type(left_operand, right_operand, operator):
-    return cubo_semantico[left_operand][right_operand][operator]
+    if cubo_semantico[left_operand][right_operand][operator]:
+        return cubo_semantico[left_operand][right_operand][operator]
+    else:
+        raise TypeError(f"'{operator}' is not supported between instances of '{left_operand}' and '{right_operand}'")
 
 # Function that checks the type of a given operand
 def get_operand_type(operand):
-    # Check the types of the operands
-    operand_type = ""
+    # Get the current scope variable
+
     print("------------------ Received Operand: ", operand)
-    if operand in funcs_dir[current_scope]["vars"]:
-        operand_type = funcs_dir[current_scope]["vars"][operand]
-    else:
-        if isinstance(operand, int):
-            operand_type = "int"
-        elif isinstance(operand, float):
-            operand_type = "float"
-        elif isinstance(operand, bool):
-            operand_type = "bool"
+
+    # Initialize the return var
+    operand_type = ""
+
+    # First check if we are not in global in order to also look into those variables
+    if current_scope != "global":
+        # Check the types of the operands
+        if operand in funcs_dir[current_scope]["vars"]:
+            operand_type = funcs_dir[current_scope]["vars"][operand]
+        elif operand in funcs_dir["global"]["vars"]:
+            operand_type = funcs_dir["global"]["vars"][operand]
         else:
-            raise ReferenceError(f"{operand} is not defined")
+            if isinstance(operand, bool):
+                operand_type = "bool"
+            elif isinstance(operand, int):
+                operand_type = "int"
+            elif isinstance(operand, float):
+                operand_type = "float"
+            else:
+                raise ReferenceError(f"'{operand}' is not defined")
+    else:
+        if operand in funcs_dir[current_scope]["vars"]:
+            operand_type = funcs_dir[current_scope]["vars"][operand]
+        else:
+            if isinstance(operand, bool):
+                operand_type = "bool"
+            elif isinstance(operand, int):
+                operand_type = "int"
+            elif isinstance(operand, float):
+                operand_type = "float"
+            else:
+                raise ReferenceError(f"'{operand}' is not defined")
 
     return operand_type
 
@@ -209,7 +232,7 @@ def t_error(t):
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
 
 def p_prog(p):
-    "prog : PROGRAM ID ENDINSTRUC vars funcs MAIN body END"
+    "prog : PROGRAM ID ENDINSTRUC vars funcs mas_funcs MAIN body END"
     p[0] = ('prog', p[2], p[4], p[5], p[7])
 
 def p_vars(p):
@@ -240,9 +263,12 @@ def p_variables(p):
 
         # Check scope
         if current_scope in funcs_dir:
-            funcs_dir[current_scope]['vars'][var_name] = vars_type
+            if var_name in funcs_dir[current_scope]['vars']:
+                raise ReferenceError(f"'{var_name}' variable has already been declared")
+            else:
+                funcs_dir[current_scope]['vars'][var_name] = vars_type
         else:
-            funcs_dir['global']['vars'][var_name] = vars_type
+            funcs_dir[current_scope] = {'vars': {var_name: vars_type}}
 
 def p_list_ids(p):
     "list_ids : ID mas_ids"
@@ -272,30 +298,69 @@ def p_type(p):
     current_type_stack.append(p[1])
 
 def p_funcs(p):
-    """funcs : VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
+    """funcs : func_start LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
             | empty"""
-    """
-    # Get the current scope global variable
-    global current_scope
 
     # Check if we have a function
-    if len(p) == 11:
-        current_scope = p[2]
-        p[0] = ('func', p[2], p[4], p[7], p[8])
+    if len(p) == 10:
+        # Get current scope global variable
+        global current_scope
 
-        funcs_dir[current_scope] = {
-            'type': 'void',
-            'param': p[4],
-            'vars': {}
-        }
+        # Reset current scope to global
+        current_scope = "global"
+
+        print("------------------- Current scope after finish func: ", current_scope)
+        print("------------------- func dir: ", funcs_dir)
+
+        p[0] = ('func', p[1], p[3], p[6], p[7])
     else:
         p[0] = None
-    """
+
+def p_func_start(p):
+    """func_start : VOID ID"""
+
+    # Set the global variable current scope to be the new function
+    global current_scope
+    current_scope = p[2]
+
+    print("------------------- Current scope: ", current_scope)
+
+    # Check if we already have the function declared in out func dir
+    if current_scope in funcs_dir:
+        raise ReferenceError(f"'{current_scope}' function has already been declared")
+
+    p[0] = p[2]
+
+def p_mas_funcs(p):
+    """mas_funcs : funcs
+            | empty"""
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = None
 
 def p_list_params(p):
     """list_params : ID COLON type mas_params
                     | empty"""
+
+    # Get current scope global variable
+    global current_scope
+
     if len(p) == 5:
+        # Get name and type of param
+        param_name = p[1]
+        param_type = p[3]
+
+        # Check scope
+        if current_scope in funcs_dir:
+            # Check if we have one already declared within the scope
+            if param_name in funcs_dir[current_scope]['vars']:
+                raise ReferenceError(f"'{param_name}' variable has already been declared in this function '{current_scope}'")
+            else:
+                funcs_dir[current_scope]['vars'][param_name] = param_type
+        else:
+            funcs_dir[current_scope] = {'vars': {param_name: param_type}}
+
         p[0] = [(p[1], p[3])] + p[4]
     else:
         p[0] = []
@@ -341,12 +406,13 @@ def p_assign(p):
     assigned_type = operand_stack.pop()
 
     print("-------------------- Assigned val", assigned_value)
+    print("-------------------- Assigned val", assigned_type)
 
     if variable_name not in funcs_dir[current_scope]["vars"]:
-        raise ReferenceError(f"Assignment to undeclared variable {variable_name}")
+        raise ReferenceError(f"Assignment to undeclared variable '{variable_name}'")
     elif funcs_dir[current_scope]["vars"][variable_name] != assigned_type:
         expected_type = funcs_dir[current_scope]["vars"][variable_name]
-        raise TypeError(f"Result type must be {expected_type}, not {assigned_type}")
+        raise TypeError(f"Result type must be '{expected_type}', not '{assigned_type}'")
     else:
         p[0] = ['assign', variable_name, assigned_value]
 
@@ -579,37 +645,27 @@ end
 """
 
 test = """
-program test2;
-
-var w, x: int; y, z: float; isValid: bool;
-
-main
-{
-    w = 5;
-    x = 2;
-    w = w + x;
-
-    y = 2.5;
-    z = 2.5;
-    y = y + z;
-
-    isValid = true;
-}
-end
-"""
-
-test3 = """
 program test3;
 
-var x, y, z: float; is_greater: bool;
+var x: int;
+
+void hello (i: int, x: float) [
+    var y: float;
+    {
+        x = y * i;
+    }
+];
+
+void bye (m: bool) [
+    var y: float;
+    {
+        m = x > y;
+    }
+];
 
 main
 {
-    x = 1 + 2 * 5 / 9;
-    y = x + 1;
-    z = x + y;
-
-    is_greater = z != 0;
+    x = 1 + 2;
 }
 end
 """
@@ -623,7 +679,7 @@ operand_stack = deque()
 lexer = lex.lex()
 
 # Give the lexer some input
-lexer.input(test3)
+lexer.input(test)
 
 # Build parser
 parser = yacc.yacc(start="prog", debug=True)
@@ -642,7 +698,7 @@ print("-------------------------------------------------------------")
 print("")
 
 # Parse the input and get the results
-parse_tree = parser.parse(test3, debug=True)
+parse_tree = parser.parse(test, debug=True)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
