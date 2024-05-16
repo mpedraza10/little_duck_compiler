@@ -2,6 +2,7 @@
 import lex
 import yacc
 from collections import deque
+import re
 
 # ------------------------------------------------- Tabla de consideraciones semanticas (cubo semantico) -------------------------------------------------
 
@@ -25,6 +26,12 @@ cubo_semantico['int']['int']['+'] = 'int'
 cubo_semantico['int']['int']['-'] = 'int'
 cubo_semantico['int']['int']['*'] = 'int'
 cubo_semantico['int']['int']['/'] = 'float'
+
+cubo_semantico['float']['float']['+'] = 'float'
+cubo_semantico['float']['float']['-'] = 'float'
+cubo_semantico['float']['float']['*'] = 'float'
+cubo_semantico['float']['float']['/'] = 'float'
+
 cubo_semantico['int']['float']['+'] = 'float'
 cubo_semantico['float']['int']['+'] = 'float'
 cubo_semantico['int']['float']['-'] = 'float'
@@ -41,38 +48,52 @@ cubo_semantico['int']['int']['!='] = 'bool'
 cubo_semantico['int']['int']['<'] = 'bool'
 cubo_semantico['int']['int']['>'] = 'bool'
 
-def obtener_tipo_resultado(operando1, operando2, operador):
-    tipo1 = type(operando1).__name__
-    tipo2 = type(operando2).__name__
+cubo_semantico['float']['float']['!='] = 'bool'
+cubo_semantico['float']['float']['<'] = 'bool'
+cubo_semantico['float']['float']['>'] = 'bool'
 
-    # Verificar si los tipos y el operador están en el cubo semántico
-    if tipo1 in cubo_semantico and tipo2 in cubo_semantico[tipo1] and operador in cubo_semantico[tipo1][tipo2]:
-        resultado = cubo_semantico[tipo1][tipo2][operador]
-        if resultado:
-            return resultado
-        else:
-            raise TypeError(f"Operación inválida: {tipo1} {operador} {tipo2}")
-    else:
-        raise TypeError(f"Operación inválida o no soportada: {tipo1} {operador} {tipo2}")
-
-# Ejemplo de uso
-"""
-try:
-    tipo_res = obtener_tipo_resultado(1, "a", '+')
-    print(f"Resultado tipo: {tipo_res}")
-except TypeError as e:
-    print(e)
-"""
+cubo_semantico['int']['float']['!='] = 'bool'
+cubo_semantico['float']['int']['!='] = 'bool'
+cubo_semantico['int']['float']['<'] = 'bool'
+cubo_semantico['float']['int']['<'] = 'bool'
+cubo_semantico['int']['float']['>'] = 'bool'
+cubo_semantico['float']['int']['>'] = 'bool'
 
 # ------------------------------------------------- Directorio de funciones y variables -------------------------------------------------
 
-directorio_funciones = {
+funcs_dir = {
     'global': {
-        'type': 'void',
-        'param': [],
-        'vars': "global_vars"
+        'vars': {}
     }
 }
+
+current_scope = 'global'
+
+# ------------------------------------------------- Helper functions -------------------------------------------------
+
+# Function that returns the expected type of an operation
+def get_expected_type(left_operand, right_operand, operator):
+    return cubo_semantico[left_operand][right_operand][operator]
+
+# Function that checks the type of a given operand
+def get_operand_type(operand):
+    # Check the types of the operands
+    operand_type = ""
+    print("------------------ Received Operand: ", operand)
+    if operand in funcs_dir[current_scope]["vars"]:
+        operand_type = funcs_dir[current_scope]["vars"][operand]
+    else:
+        if isinstance(operand, int):
+            operand_type = "int"
+        elif isinstance(operand, float):
+            operand_type = "float"
+        elif isinstance(operand, bool):
+            operand_type = "bool"
+        else:
+            raise ReferenceError(f"{operand} is not defined")
+
+    return operand_type
+
 
 # ------------------------------------------------- Lexico -------------------------------------------------
 
@@ -82,6 +103,7 @@ tokens = (
     "CTESTRING",
     "CTEINT",
     "CTEFLOAT",
+    "CTEBOOL",
     'PLUS',
     'MINUS',
     'TIMES',
@@ -134,17 +156,12 @@ reserved = {
     "while": "WHILE",
     "do": "DO",
     "int": "INT",
-    "float": "FLOAT"
+    "float": "FLOAT",
+    "bool": "BOOL"
 }
 
 # Combine the tokens and reserved keywords
 tokens = tokens + tuple(reserved.values())
-
-# Define a rule for IDs
-def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved.get(t.value, 'ID') # Check for reserved words
-    return t
 
 # Define a rule for floating numbers
 def t_CTEFLOAT(t):
@@ -162,6 +179,18 @@ def t_CTEINT(t):
 def t_CTESTRING(t):
     r'"([^"]*)"'
     t.value = str(t.value)
+    return t
+
+# Define a rule for boolean values
+def t_CTEBOOL(t):
+    r'true|false'
+    t.value = t.value == 'true'
+    return t
+
+# Define a rule for IDs
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved.get(t.value, 'ID') # Check for reserved words
     return t
 
 # Define how to handle whitespace
@@ -195,6 +224,26 @@ def p_variables(p):
     "variables : list_ids COLON type ENDINSTRUC mas_vars"
     p[0] = ('vars', p[1], p[3], p[5])
 
+    # Loop the list of vars
+    print("------------------- type stack: ", current_type_stack)
+    print("------------------- var name stack: ", current_var_stack)
+    print("------------------- p1: ", p[1])
+    for var_name in p[1]:
+        current_var_stack.append(var_name)
+
+    # Get the type of the n coming variables
+    vars_type = current_type_stack.pop()
+
+    # Pop the vars and types and add them to the directories
+    while current_var_stack:
+        var_name = current_var_stack.pop()
+
+        # Check scope
+        if current_scope in funcs_dir:
+            funcs_dir[current_scope]['vars'][var_name] = vars_type
+        else:
+            funcs_dir['global']['vars'][var_name] = vars_type
+
 def p_list_ids(p):
     "list_ids : ID mas_ids"
     p[0] = [p[1]] + p[2]
@@ -217,16 +266,31 @@ def p_mas_vars(p):
 
 def p_type(p):
     """type : INT
-            | FLOAT"""
+            | FLOAT
+            | BOOL"""
     p[0] = p[1]
+    current_type_stack.append(p[1])
 
 def p_funcs(p):
     """funcs : VOID ID LPAREN list_params RPAREN LBRACKET vars body RBRACKET ENDINSTRUC
             | empty"""
+    """
+    # Get the current scope global variable
+    global current_scope
+
+    # Check if we have a function
     if len(p) == 11:
+        current_scope = p[2]
         p[0] = ('func', p[2], p[4], p[7], p[8])
+
+        funcs_dir[current_scope] = {
+            'type': 'void',
+            'param': p[4],
+            'vars': {}
+        }
     else:
         p[0] = None
+    """
 
 def p_list_params(p):
     """list_params : ID COLON type mas_params
@@ -247,6 +311,7 @@ def p_mas_params(p):
 def p_body(p):
     "body : LBRACE list_statements RBRACE"
     p[0] = p[2]
+    print("-------------------- We are at body")
 
 def p_statement(p):
     """statement : assign
@@ -270,15 +335,45 @@ def p_more_statements(p):
 
 def p_assign(p):
     "assign : ID ASSIGN expresion ENDINSTRUC"
-    p[0] = ('assign', p[1], p[3])
+    # Get the var and value
+    variable_name = p[1]
+    assigned_value = p[3]
+    assigned_type = operand_stack.pop()
+
+    print("-------------------- Assigned val", assigned_value)
+
+    if variable_name not in funcs_dir[current_scope]["vars"]:
+        raise ReferenceError(f"Assignment to undeclared variable {variable_name}")
+    elif funcs_dir[current_scope]["vars"][variable_name] != assigned_type:
+        expected_type = funcs_dir[current_scope]["vars"][variable_name]
+        raise TypeError(f"Result type must be {expected_type}, not {assigned_type}")
+    else:
+        p[0] = ['assign', variable_name, assigned_value]
 
 def p_expresion(p):
     "expresion : exp mas_expresiones"
+    print("-------------------- Expresion rule")
     if p[2] is None:
         p[0] = p[1]
     else:
         operator, right_exp = p[2]
-        p[0] = (operator, p[1], right_exp)
+        print("-------------------- Operator", operator)
+        print("-------------------- left", p[1])
+        print("-------------------- right", right_exp)
+
+        # Pop the last types
+        right_operand_type = operand_stack.pop()
+        left_operand_type = operand_stack.pop()
+
+        # Check expected type
+        result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+
+        # Push the new result type to the stack
+        operand_stack.append(result_type)
+        print("-------------------- Result type: ", result_type)
+        print("-------------------- Operand stack: ", operand_stack)
+
+        p[0] = [operator, p[1], right_exp]
 
 def p_mas_expresiones(p):
     """mas_expresiones : GREATERTHAN exp
@@ -286,14 +381,34 @@ def p_mas_expresiones(p):
                         | NOTEQUAL exp
                         | empty"""
     if len(p) == 3:
-        p[0] = (p[1], p[2])
+        p[0] = [p[1], p[2]]
     else:
         p[0] = None
 
 def p_exp(p):
     "exp : termino mas_exp"
+    print("-------------------- Exp rule")
     if len(p) == 3:
-        p[0] = (p[1], p[2])
+        print("-------------------- p1: ", p[1])
+        print("-------------------- p2: ", p[2])
+        if p[2] is None:
+            p[0] = p[1]
+        else:
+            operator = p[2][0]
+
+            # Pop the last types
+            right_operand_type = operand_stack.pop()
+            left_operand_type = operand_stack.pop()
+
+            # Check expected type
+            result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+
+            # Push the new result type to the stack
+            operand_stack.append(result_type)
+            print("-------------------- Result type: ", result_type)
+            print("-------------------- Operand stack: ", operand_stack)
+
+            p[0] = [p[1]] + p[2]
     else:
         p[0] = None
 
@@ -301,24 +416,45 @@ def p_mas_exp(p):
     """mas_exp : PLUS exp
                 | MINUS exp
                 | empty"""
+    print("-------------------- mas Exp rule")
+    print("-------------------- p1: ", p[1])
     if p[1] != None:
-        p[0] = (p[1], p[2])
+        p[0] = [p[1], p[2]]
 
 def p_termino(p):
     "termino : factor mas_terminos"
+    print("-------------------- termino rule")
     if p[2] is None:
         p[0] = p[1]
     else:
+        left_termino = p[1]
         operator, right_termino = p[2]
-        p[0] = (operator, p[1], right_termino)
+        print("-------------------- Operator", operator)
+        print("-------------------- left", p[1])
+        print("-------------------- right", right_termino)
+
+        # Pop the last types
+        right_operand_type = operand_stack.pop()
+        left_operand_type = operand_stack.pop()
+
+        # Check expected type
+        result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+
+        # Push the new result type to the stack
+        operand_stack.append(result_type)
+        print("-------------------- Result type: ", result_type)
+        print("-------------------- Operand stack: ", operand_stack)
+
+        p[0] = [operator, left_termino, right_termino]
 
 
 def p_mas_terminos(p):
     """mas_terminos : TIMES termino
                     | DIVIDE termino
                     | empty"""
+    print("-------------------- mas terminos rule")
     if len(p) == 3:
-        p[0] = (p[1], p[2])
+        p[0] = [p[1], p[2]]
     else:
         p[0] = None
 
@@ -330,18 +466,24 @@ def p_factor(p):
     if len(p) == 4:
         p[0] = p[2]
     elif len(p) == 3:
-        p[0] = (p[1], p[2])
+        p[0] = [p[1], p[2]]
     else:
         p[0] = p[1]
 
 def p_factor_opt(p):
     """factor_opt : cte
                     | ID"""
+    print("--------------------- factor opt: ")
+    operand_type = get_operand_type(p[1])
+    print("--------------------- operand type: ", operand_type)
+    operand_stack.append(operand_type)
+    print("--------------------- operand stack: ", operand_stack)
     p[0] = p[1]
 
 def p_cte(p):
     """cte : CTEINT
-            | CTEFLOAT"""
+            | CTEFLOAT
+            | CTEBOOL"""
     p[0] = p[1]
 
 def p_condition(p):
@@ -408,6 +550,7 @@ def p_error(p):
     print("Error de sintaxis en la entrada:", p)
 
 # ------------------------------------------------- Test -------------------------------------------------
+
 basic_program_data = """
 program test;
 
@@ -434,23 +577,53 @@ main
 }
 end
 """
+
 test = """
 program test2;
 
-var i: int;
+var w, x: int; y, z: float; isValid: bool;
 
 main
 {
-    i = 5 * 2;
+    w = 5;
+    x = 2;
+    w = w + x;
+
+    y = 2.5;
+    z = 2.5;
+    y = y + z;
+
+    isValid = true;
 }
 end
 """
+
+test3 = """
+program test3;
+
+var x, y, z: float; is_greater: bool;
+
+main
+{
+    x = 1 + 2 * 5 / 9;
+    y = x + 1;
+    z = x + y;
+
+    is_greater = z != 0;
+}
+end
+"""
+
+# Initialize stacks
+current_type_stack = deque()
+current_var_stack = deque()
+operand_stack = deque()
 
 # Build the lexer
 lexer = lex.lex()
 
 # Give the lexer some input
-lexer.input(test)
+lexer.input(test3)
 
 # Build parser
 parser = yacc.yacc(start="prog", debug=True)
@@ -469,7 +642,7 @@ print("-------------------------------------------------------------")
 print("")
 
 # Parse the input and get the results
-parse_tree = parser.parse(test, debug=True)
+parse_tree = parser.parse(test3, debug=True)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
@@ -477,3 +650,8 @@ print("Parse Tree: ", parse_tree)
 print("")
 print("------------------------------------------------------------")
 print("")
+print("Function and Vars Directory: ")
+for key in funcs_dir:
+    print(key + ": ")
+    print(funcs_dir[key])
+    print()
