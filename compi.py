@@ -80,8 +80,7 @@ def get_expected_type(left_operand, right_operand, operator):
 # Function that checks the type of a given operand
 def get_operand_type(operand):
     # Get the current scope variable
-
-    print("------------------ Received Operand: ", operand)
+    global current_scope
 
     # Initialize the return var
     operand_type = ""
@@ -245,12 +244,8 @@ def p_vars(p):
 
 def p_variables(p):
     "variables : list_ids COLON type ENDINSTRUC mas_vars"
-    p[0] = ('vars', p[1], p[3], p[5])
 
-    # Loop the list of vars
-    print("------------------- type stack: ", current_type_stack)
-    print("------------------- var name stack: ", current_var_stack)
-    print("------------------- p1: ", p[1])
+    # Get every var name from list ids
     for var_name in p[1]:
         current_var_stack.append(var_name)
 
@@ -309,9 +304,6 @@ def p_funcs(p):
         # Reset current scope to global
         current_scope = "global"
 
-        print("------------------- Current scope after finish func: ", current_scope)
-        print("------------------- func dir: ", funcs_dir)
-
         p[0] = ('func', p[1], p[3], p[6], p[7])
     else:
         p[0] = None
@@ -322,8 +314,6 @@ def p_func_start(p):
     # Set the global variable current scope to be the new function
     global current_scope
     current_scope = p[2]
-
-    print("------------------- Current scope: ", current_scope)
 
     # Check if we already have the function declared in out func dir
     if current_scope in funcs_dir:
@@ -376,7 +366,6 @@ def p_mas_params(p):
 def p_body(p):
     "body : LBRACE list_statements RBRACE"
     p[0] = p[2]
-    print("-------------------- We are at body")
 
 def p_statement(p):
     """statement : assign
@@ -400,14 +389,12 @@ def p_more_statements(p):
 
 def p_assign(p):
     "assign : ID ASSIGN expresion ENDINSTRUC"
-    # Get the var and value
+    # Get the var name assigned value expresion and type of that value
     variable_name = p[1]
     assigned_value = p[3]
     assigned_type = operand_stack.pop()
 
-    print("-------------------- Assigned val", assigned_value)
-    print("-------------------- Assigned val", assigned_type)
-
+    # Check first if the variable name was actually declared if so check if the types are correct
     if variable_name not in funcs_dir[current_scope]["vars"]:
         raise ReferenceError(f"Assignment to undeclared variable '{variable_name}'")
     elif funcs_dir[current_scope]["vars"][variable_name] != assigned_type:
@@ -418,14 +405,11 @@ def p_assign(p):
 
 def p_expresion(p):
     "expresion : exp mas_expresiones"
-    print("-------------------- Expresion rule")
     if p[2] is None:
         p[0] = p[1]
     else:
+        # Get operator and right operand
         operator, right_exp = p[2]
-        print("-------------------- Operator", operator)
-        print("-------------------- left", p[1])
-        print("-------------------- right", right_exp)
 
         # Pop the last types
         right_operand_type = operand_stack.pop()
@@ -436,8 +420,6 @@ def p_expresion(p):
 
         # Push the new result type to the stack
         operand_stack.append(result_type)
-        print("-------------------- Result type: ", result_type)
-        print("-------------------- Operand stack: ", operand_stack)
 
         p[0] = [operator, p[1], right_exp]
 
@@ -453,10 +435,7 @@ def p_mas_expresiones(p):
 
 def p_exp(p):
     "exp : termino mas_exp"
-    print("-------------------- Exp rule")
     if len(p) == 3:
-        print("-------------------- p1: ", p[1])
-        print("-------------------- p2: ", p[2])
         if p[2] is None:
             p[0] = p[1]
         else:
@@ -471,8 +450,6 @@ def p_exp(p):
 
             # Push the new result type to the stack
             operand_stack.append(result_type)
-            print("-------------------- Result type: ", result_type)
-            print("-------------------- Operand stack: ", operand_stack)
 
             p[0] = [p[1]] + p[2]
     else:
@@ -482,22 +459,16 @@ def p_mas_exp(p):
     """mas_exp : PLUS exp
                 | MINUS exp
                 | empty"""
-    print("-------------------- mas Exp rule")
-    print("-------------------- p1: ", p[1])
     if p[1] != None:
         p[0] = [p[1], p[2]]
 
 def p_termino(p):
     "termino : factor mas_terminos"
-    print("-------------------- termino rule")
     if p[2] is None:
         p[0] = p[1]
     else:
         left_termino = p[1]
         operator, right_termino = p[2]
-        print("-------------------- Operator", operator)
-        print("-------------------- left", p[1])
-        print("-------------------- right", right_termino)
 
         # Pop the last types
         right_operand_type = operand_stack.pop()
@@ -508,8 +479,6 @@ def p_termino(p):
 
         # Push the new result type to the stack
         operand_stack.append(result_type)
-        print("-------------------- Result type: ", result_type)
-        print("-------------------- Operand stack: ", operand_stack)
 
         p[0] = [operator, left_termino, right_termino]
 
@@ -518,7 +487,6 @@ def p_mas_terminos(p):
     """mas_terminos : TIMES termino
                     | DIVIDE termino
                     | empty"""
-    print("-------------------- mas terminos rule")
     if len(p) == 3:
         p[0] = [p[1], p[2]]
     else:
@@ -539,11 +507,13 @@ def p_factor(p):
 def p_factor_opt(p):
     """factor_opt : cte
                     | ID"""
-    print("--------------------- factor opt: ")
+
+    # Get operand type if it exist in our vars table
     operand_type = get_operand_type(p[1])
-    print("--------------------- operand type: ", operand_type)
+
+    # Add it to the operand stack to keep track
     operand_stack.append(operand_type)
-    print("--------------------- operand stack: ", operand_stack)
+
     p[0] = p[1]
 
 def p_cte(p):
@@ -595,10 +565,7 @@ def p_print(p):
 def p_print_opt(p):
     """print_opt : expresion more_opt
                 | CTESTRING more_opt"""
-    if isinstance(p[1], str):
-        p[0] = ('string', p[1], p[2])
-    else:
-        p[0] = ('exp', p[1], p[2])
+    p[0] = (p[1], p[2])
 
 def p_more_opt(p):
     """more_opt : COMMA print_opt
@@ -618,7 +585,7 @@ def p_error(p):
 # ------------------------------------------------- Test -------------------------------------------------
 
 basic_program_data = """
-program test;
+program BasicProgram;
 
 var i, j: int;
 
@@ -639,29 +606,23 @@ main
     print("The max value between i=", i, " and j is=", j, " is: ");
     max(i, j);
 
-    do { i = i + 1; } while ( i < j );
+    do {
+        i = i + 1;
+
+        if (i < j) {
+            print("La i sigue siendo menor. i = ", i);
+        } else {
+            print("La j es ahora mayor. j = ", j);
+        };
+    } while ( i < j );
 }
 end
 """
 
 test = """
-program test3;
+program test;
 
 var x: int;
-
-void hello (i: int, x: float) [
-    var y: float;
-    {
-        x = y * i;
-    }
-];
-
-void bye (m: bool) [
-    var y: float;
-    {
-        m = x > y;
-    }
-];
 
 main
 {
@@ -679,7 +640,7 @@ operand_stack = deque()
 lexer = lex.lex()
 
 # Give the lexer some input
-lexer.input(test)
+lexer.input(basic_program_data)
 
 # Build parser
 parser = yacc.yacc(start="prog", debug=True)
@@ -698,7 +659,7 @@ print("-------------------------------------------------------------")
 print("")
 
 # Parse the input and get the results
-parse_tree = parser.parse(test, debug=True)
+parse_tree = parser.parse(basic_program_data, debug=True)
 print("")
 print("-------------------------- Parser --------------------------")
 print("")
