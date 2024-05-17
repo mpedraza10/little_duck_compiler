@@ -3,7 +3,7 @@ from collections import deque
 import ply.yacc as yacc
 from plylexer import tokens
 from helper_funcs import get_expected_type, get_operand_type
-from globals import current_scope, funcs_dir
+import globals
 
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
 
@@ -34,13 +34,15 @@ def p_variables(p):
         var_name = current_var_stack.pop()
 
         # Check scope
-        if current_scope in funcs_dir:
-            if var_name in funcs_dir[current_scope]['vars']:
+        if globals.current_scope in globals.funcs_dir:
+            if var_name in globals.funcs_dir[globals.current_scope]['vars']:
                 raise ReferenceError(f"'{var_name}' variable has already been declared")
             else:
-                funcs_dir[current_scope]['vars'][var_name] = vars_type
+                globals.funcs_dir[globals.current_scope]['vars'][var_name] = vars_type
         else:
-            funcs_dir[current_scope] = {'vars': {var_name: vars_type}}
+            globals.funcs_dir[globals.current_scope] = {'vars': {var_name: vars_type}}
+
+
 
 def p_list_ids(p):
     "list_ids : ID mas_ids"
@@ -75,11 +77,8 @@ def p_funcs(p):
 
     # Check if we have a function
     if len(p) == 10:
-        # Get current scope global variable
-        global current_scope
-
         # Reset current scope to global
-        current_scope = "global"
+        globals.current_scope = "global"
 
         p[0] = ('func', p[1], p[3], p[6], p[7])
     else:
@@ -89,29 +88,21 @@ def p_func_start(p):
     """func_start : VOID ID"""
 
     # Set the global variable current scope to be the new function
-    global current_scope
-    current_scope = p[2]
+    globals.current_scope = p[2]
 
     # Check if we already have the function declared in out func dir
-    if current_scope in funcs_dir:
-        raise ReferenceError(f"'{current_scope}' function has already been declared")
+    if globals.current_scope in globals.funcs_dir:
+        raise ReferenceError(f"'{globals.current_scope}' function has already been declared")
 
     p[0] = p[2]
 
 def p_mas_funcs(p):
-    """mas_funcs : funcs
-            | empty"""
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = None
+    "mas_funcs : funcs"
+    p[0] = p[1]
 
 def p_list_params(p):
     """list_params : ID COLON type mas_params
                     | empty"""
-
-    # Get current scope global variable
-    global current_scope
 
     if len(p) == 5:
         # Get name and type of param
@@ -119,14 +110,14 @@ def p_list_params(p):
         param_type = p[3]
 
         # Check scope
-        if current_scope in funcs_dir:
+        if globals.current_scope in globals.funcs_dir:
             # Check if we have one already declared within the scope
-            if param_name in funcs_dir[current_scope]['vars']:
-                raise ReferenceError(f"'{param_name}' variable has already been declared in this function '{current_scope}'")
+            if param_name in globals.funcs_dir[globals.current_scope]['vars']:
+                raise ReferenceError(f"'{param_name}' variable has already been declared in this function '{globals.current_scope}'")
             else:
-                funcs_dir[current_scope]['vars'][param_name] = param_type
+                globals.funcs_dir[globals.current_scope]['vars'][param_name] = param_type
         else:
-            funcs_dir[current_scope] = {'vars': {param_name: param_type}}
+            globals.funcs_dir[globals.current_scope] = {'vars': {param_name: param_type}}
 
         p[0] = [(p[1], p[3])] + p[4]
     else:
@@ -142,6 +133,7 @@ def p_mas_params(p):
 
 def p_body(p):
     "body : LBRACE list_statements RBRACE"
+
     p[0] = p[2]
 
 def p_statement(p):
@@ -155,6 +147,7 @@ def p_statement(p):
 def p_list_statements(p):
     """list_statements : statement more_statements
                         | empty"""
+
     if len(p) == 3:
         p[0] = [p[1]] + p[2]
     else:
@@ -172,10 +165,10 @@ def p_assign(p):
     assigned_type = operand_stack.pop()
 
     # Check first if the variable name was actually declared if so check if the types are correct
-    if variable_name not in funcs_dir[current_scope]["vars"]:
+    if variable_name not in globals.funcs_dir[globals.current_scope]["vars"]:
         raise ReferenceError(f"Assignment to undeclared variable '{variable_name}'")
-    elif funcs_dir[current_scope]["vars"][variable_name] != assigned_type:
-        expected_type = funcs_dir[current_scope]["vars"][variable_name]
+    elif globals.funcs_dir[globals.current_scope]["vars"][variable_name] != assigned_type:
+        expected_type = globals.funcs_dir[globals.current_scope]["vars"][variable_name]
         raise TypeError(f"Result type must be '{expected_type}', not '{assigned_type}'")
     else:
         p[0] = ['assign', variable_name, assigned_value]
@@ -274,6 +267,7 @@ def p_factor(p):
                 | factor_opt
                 | PLUS factor_opt
                 | MINUS factor_opt"""
+
     if len(p) == 4:
         p[0] = p[2]
     elif len(p) == 3:
