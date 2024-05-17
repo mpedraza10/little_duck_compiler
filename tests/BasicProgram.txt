@@ -1,0 +1,32 @@
+program BasicProgram;
+
+var i, j: int;
+
+void max(i: int, j: int) [
+    {
+        if (i > j) {
+            print(i);
+        } else {
+            print(j);
+        };
+    }
+];
+
+main
+{
+    i = 5;
+    j = 10;
+    print("The max value between i=", i, " and j is=", j, " is: ");
+    max(i, j);
+
+    do {
+        i = i + 1;
+
+        if (i < j) {
+            print("La i sigue siendo menor. i = ", i);
+        } else {
+            print("La j es ahora mayor. j = ", j);
+        };
+    } while ( i < j );
+}
+end
