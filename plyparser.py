@@ -3,6 +3,7 @@ from collections import deque
 import ply.yacc as yacc
 from plylexer import tokens
 from helper_funcs import get_expected_type, get_operand_type
+from Quadruples import QuadruplesQueue
 import globals
 
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
@@ -162,7 +163,7 @@ def p_assign(p):
     # Get the var name assigned value expresion and type of that value
     variable_name = p[1]
     assigned_value = p[3]
-    assigned_type = operand_stack.pop()
+    assigned_type = operand_type_stack.pop()
 
     # Check first if the variable name was actually declared if so check if the types are correct
     if variable_name not in globals.funcs_dir[globals.current_scope]["vars"]:
@@ -182,14 +183,14 @@ def p_expresion(p):
         operator, right_exp = p[2]
 
         # Pop the last types
-        right_operand_type = operand_stack.pop()
-        left_operand_type = operand_stack.pop()
+        right_operand_type = operand_type_stack.pop()
+        left_operand_type = operand_type_stack.pop()
 
         # Check expected type
         result_type = get_expected_type(left_operand_type, right_operand_type, operator)
 
         # Push the new result type to the stack
-        operand_stack.append(result_type)
+        operand_type_stack.append(result_type)
 
         p[0] = [operator, p[1], right_exp]
 
@@ -212,14 +213,14 @@ def p_exp(p):
             operator = p[2][0]
 
             # Pop the last types
-            right_operand_type = operand_stack.pop()
-            left_operand_type = operand_stack.pop()
+            right_operand_type = operand_type_stack.pop()
+            left_operand_type = operand_type_stack.pop()
 
             # Check expected type
             result_type = get_expected_type(left_operand_type, right_operand_type, operator)
 
             # Push the new result type to the stack
-            operand_stack.append(result_type)
+            operand_type_stack.append(result_type)
 
             p[0] = [p[1]] + p[2]
     else:
@@ -241,14 +242,14 @@ def p_termino(p):
         operator, right_termino = p[2]
 
         # Pop the last types
-        right_operand_type = operand_stack.pop()
-        left_operand_type = operand_stack.pop()
+        right_operand_type = operand_type_stack.pop()
+        left_operand_type = operand_type_stack.pop()
 
         # Check expected type
         result_type = get_expected_type(left_operand_type, right_operand_type, operator)
 
         # Push the new result type to the stack
-        operand_stack.append(result_type)
+        operand_type_stack.append(result_type)
 
         p[0] = [operator, left_termino, right_termino]
 
@@ -283,7 +284,7 @@ def p_factor_opt(p):
     operand_type = get_operand_type(p[1])
 
     # Add it to the operand stack to keep track
-    operand_stack.append(operand_type)
+    operand_type_stack.append(operand_type)
 
     p[0] = p[1]
 
@@ -353,11 +354,11 @@ def p_empty(p):
 def p_error(p):
     print("Error de sintaxis en la entrada:", p)
 
-# ------------------------------------------------- Initialize stacks -------------------------------------------------
-
-current_type_stack = deque()
-current_var_stack = deque()
-operand_stack = deque()
+# Initialize stacks and queue
+quadruples_queue = QuadruplesQueue() # Used to keep track of the generated quadruplets order
+current_type_stack = deque() # Used to keep track of type of vars when storing them in directory
+current_var_stack = deque() # Used to keep track of name of vars when storing them in directory
+operand_type_stack = deque() # Used to keep track of the operand type when we have operations
 
 # Build parser
 parser = yacc.yacc(start="prog")
