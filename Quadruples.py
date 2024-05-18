@@ -19,7 +19,7 @@ class Quadruples:
 class QuadruplesQueue:
     def __init__(self):
         self.quadruples_queue = Queue()
-        self.temp_count = 0
+        self.temp_count = 1
 
     def add_quadruple(self, operator, operand1=None, operand2=None, result=None):
         quad = Quadruples(operator, operand1, operand2, result)
@@ -32,5 +32,6 @@ class QuadruplesQueue:
         return temp_name
 
     def print_quadruples(self):
-        for quad in self.quadruples:
+        while not self.quadruples_queue.empty():
+            quad = self.quadruples_queue.get()
             print(quad)

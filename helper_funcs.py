@@ -65,11 +65,6 @@ def get_expected_type(left_operand, right_operand, operator):
 
 # Function that checks the type of a given operand
 def get_operand_type(operand):
-    # Get the global current scope
-    #global globals.current_scope
-
-    print("------------------------------- Current scope in get operand type in ", globals.current_scope)
-
     # Initialize the return var
     operand_type = ""
 

@@ -1,0 +1,9 @@
+program QuadTest;
+
+var x: float; a, b, c, d, e, f, g, h, i: int;
+
+main
+{
+    x = a * (b - c * (d + e) / f - g * h + i);
+}
+end
