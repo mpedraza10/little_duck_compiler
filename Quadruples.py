@@ -21,7 +21,7 @@ class QuadruplesQueue:
         self.quadruples_queue = Queue()
         self.temp_count = 0
 
-    def add_quadruples(self, operator, operand1=None, operand2=None, result=None):
+    def add_quadruple(self, operator, operand1=None, operand2=None, result=None):
         quad = Quadruples(operator, operand1, operand2, result)
         self.quadruples_queue.put(quad)
         return quad
