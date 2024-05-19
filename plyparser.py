@@ -320,18 +320,27 @@ def p_mas_list_exp(p):
 
 def p_print(p):
     "print : PRINT LPAREN print_opt RPAREN ENDINSTRUC"
+
+    for expr in p[3]:
+        if isinstance(expr, tuple):
+            expr_value = expr[0]
+            globals.quadruples_queue.add_quadruple('print', None, None, expr_value)
+        else:
+            globals.quadruples_queue.add_quadruple('print', None, None, expr)
+
     p[0] = ('print', p[3])
 
 def p_print_opt(p):
     """print_opt : expresion more_opt
                 | CTESTRING more_opt"""
-    p[0] = (p[1], p[2])
+
+    p[0] = [p[1]] + p[2]
 
 def p_more_opt(p):
     """more_opt : COMMA print_opt
                 | empty"""
     if len(p) == 3:
-        p[0] = [p[2]]
+        p[0] = p[2]
     else:
         p[0] = []
 
