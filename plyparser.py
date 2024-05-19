@@ -296,6 +296,11 @@ def p_condition(p):
 def p_condition_start(p):
     "condition_start : IF LPAREN expresion RPAREN"
 
+    # Check if the expresion is valid bool
+    expression_type = operand_type_stack.pop()
+    if expression_type != "bool":
+        raise TypeError(f"Expression must be 'bool', not '{expression_type}'")
+
     # Add the goto f when we finish evaluating the expression and save the index to return later
     globals.quadruples_queue.add_quadruple("gotof", p[3], None, None)
     jump_stack.append(globals.quadruples_queue.quadruples_len() - 1)
@@ -325,6 +330,11 @@ def p_check_else_jump(p):
 
 def p_cycle(p):
     "cycle : do_while_start do_while_body WHILE LPAREN expresion RPAREN ENDINSTRUC"
+
+    # Check if the expresion is valid bool
+    expression_type = operand_type_stack.pop()
+    if expression_type != "bool":
+        raise TypeError(f"Expression must be 'bool', not '{expression_type}'")
 
     # Get the index of the start of do while
     start_do_while_index = jump_stack.pop()

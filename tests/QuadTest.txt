@@ -4,16 +4,20 @@ var a, b, c, d, e, f: int;
 
 main
 {
-    if (a + b > d) {
-        if (a < b) {
-            a = 0;
-            b = b + d;
+    do {
+        if (a + b < c) {
+            a = b + c;
+            do {
+                a = a - 1;
+            } while (a > b + c);
         } else {
-            c = a + b;
+            do {
+                a = b + c * d;
+                b = a - d;
+            } while (b > c + d);
         };
-    } else {
-        a = b + c;
-    };
-    d = b + a * c;
+    } while (a > b * c);
+    a = b * c;
+    c = 0;
 }
 end
