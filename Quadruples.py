@@ -1,6 +1,3 @@
-# Imports
-from queue import Queue
-
 # Class to define a quadruple
 class Quadruples:
     def __init__(self, operator, operand1=None, operand2=None, result=None):
