@@ -32,8 +32,8 @@ class QuadruplesQueue:
         return temp_name
 
     def print_quadruples(self):
-        for quad in self.quadruples_queue:
-            print(quad)
+        for index, quad in enumerate(self.quadruples_queue):
+            print(f"{index + 1}: {quad}")
 
     def quadruples_len(self):
         return len(self.quadruples_queue)

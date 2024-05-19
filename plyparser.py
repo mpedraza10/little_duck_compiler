@@ -324,8 +324,27 @@ def p_check_else_jump(p):
     globals.quadruples_queue.edit_quadruple(pending_gotof_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
 
 def p_cycle(p):
-    "cycle : DO body WHILE LPAREN expresion RPAREN ENDINSTRUC"
-    p[0] = ('do_while', p[2], p[5])
+    "cycle : do_while_start do_while_body WHILE LPAREN expresion RPAREN ENDINSTRUC"
+
+    # Get the index of the start of do while
+    start_do_while_index = jump_stack.pop()
+
+    # Add the goto t to go back in case we need to continue looping
+    globals.quadruples_queue.add_quadruple("gotot", p[5], None, start_do_while_index + 1)
+
+    p[0] = ('do_while', p[2], p[4])
+
+def p_do_while_start(p):
+    "do_while_start : DO"
+
+    # Before doing the body save the index to return later when we arrive to the while
+    jump_stack.append(globals.quadruples_queue.quadruples_len())
+
+    p[0] = p[1]
+
+def p_do_while_body(p):
+    "do_while_body : body"
+    p[0] = p[1]
 
 def p_f_call(p):
     "f_call : ID LPAREN list_exp RPAREN ENDINSTRUC"
