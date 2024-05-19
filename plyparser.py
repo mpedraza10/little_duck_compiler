@@ -283,16 +283,45 @@ def p_cte(p):
     p[0] = p[1]
 
 def p_condition(p):
-    "condition : IF LPAREN expresion RPAREN body else_block ENDINSTRUC"
-    p[0] = ('if', p[3], p[5], p[6])
+    "condition : condition_start body else_block ENDINSTRUC"
+
+    # When we finish get the end jump index
+    end_index = jump_stack.pop()
+
+    # Add the pending index to the quadruple
+    globals.quadruples_queue.edit_quadruple(end_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
+
+    p[0] = ['if', p[1], p[2], p[3]]
+
+def p_condition_start(p):
+    "condition_start : IF LPAREN expresion RPAREN"
+
+    # Add the goto f when we finish evaluating the expression and save the index to return later
+    globals.quadruples_queue.add_quadruple("gotof", p[3], None, None)
+    jump_stack.append(globals.quadruples_queue.quadruples_len() - 1)
+
+    p[0] = [p[1], p[3]]
 
 def p_else_block(p):
-    """else_block : ELSE body
+    """else_block : ELSE check_else_jump body
             | empty"""
-    if len(p) == 3:
-        p[0] = p[2]
-    else:
-        p[0] = None
+    if len(p) == 4:
+        p[0] = [p[1], p[3]]
+
+def p_check_else_jump(p):
+    "check_else_jump : empty"
+
+    # Add the goto f when we finish evaluating the expression
+    globals.quadruples_queue.add_quadruple("goto", None, None, None)
+
+    # Get the index of gotof we had pending
+    pending_gotof_index = jump_stack.pop()
+
+    # Save the new index to return later
+    jump_stack.append(globals.quadruples_queue.quadruples_len() - 1)
+
+    # Update the pending quadruple
+    globals.quadruples_queue.edit_quadruple(pending_gotof_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
 
 def p_cycle(p):
     "cycle : DO body WHILE LPAREN expresion RPAREN ENDINSTRUC"
@@ -355,6 +384,7 @@ def p_error(p):
 current_type_stack = deque() # Used to keep track of type of vars when storing them in directory
 current_var_stack = deque() # Used to keep track of name of vars when storing them in directory
 operand_type_stack = deque() # Used to keep track of the operand type when we have operations
+jump_stack = deque()
 
 # Build parser
 parser = yacc.yacc(start="prog")

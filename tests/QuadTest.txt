@@ -1,9 +1,19 @@
 program QuadTest;
 
-var x: float; a, b, c, d, e, f, g, h, i: int;
+var a, b, c, d, e, f: int;
 
 main
 {
-    x = a * (b - c * (d + e) / f - g * h + i);
+    if (a + b > d) {
+        if (a < b) {
+            a = 0;
+            b = b + d;
+        } else {
+            c = a + b;
+        };
+    } else {
+        a = b + c;
+    };
+    d = b + a * c;
 }
 end
