@@ -2,7 +2,7 @@
 import os
 from plylexer import lexer
 from plyparser import parser
-from globals import funcs_dir
+import globals
 from helper_funcs import generate_cubo_semantico
 
 if __name__ == "__main__":
@@ -42,8 +42,19 @@ if __name__ == "__main__":
     print("")
 
     print("")
-    print("Function and Vars Directory: ")
-    for key in funcs_dir:
+    print("-------------------------- Function and vars directory --------------------------")
+    print("")
+    for key in globals.funcs_dir:
         print(key + ": ")
-        print(funcs_dir[key])
+        print(globals.funcs_dir[key])
+    print("")
+    print("------------------------------------------------------------")
+    print("")
+
+    print("")
+    print("-------------------------- Quadruplets queue --------------------------")
+    print("")
+    globals.quadruples_queue.print_quadruples()
+    print("")
+    print("------------------------------------------------------------")
     print("")

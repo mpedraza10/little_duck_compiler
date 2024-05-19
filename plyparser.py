@@ -3,10 +3,17 @@ from collections import deque
 import ply.yacc as yacc
 from plylexer import tokens
 from helper_funcs import get_expected_type, get_operand_type
-from Quadruples import QuadruplesQueue
 import globals
 
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
+
+# Define the precedence and associativity of operators
+precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'GREATERTHAN', 'LESSTHAN', 'NOTEQUAL'),
+    ('right', 'UMINUS', 'UPLUS'),  # Unary minus and plus
+)
 
 def p_prog(p):
     "prog : PROGRAM ID ENDINSTRUC vars funcs mas_funcs MAIN body END"
@@ -30,11 +37,11 @@ def p_variables(p):
     # Get the type of the n coming variables
     vars_type = current_type_stack.pop()
 
-    # Pop the vars and types and add them to the directories
+    # Pop the vars and types and add them to the directories
     while current_var_stack:
         var_name = current_var_stack.pop()
 
-        # Check scope
+        # Check scope
         if globals.current_scope in globals.funcs_dir:
             if var_name in globals.funcs_dir[globals.current_scope]['vars']:
                 raise ReferenceError(f"'{var_name}' variable has already been declared")
@@ -42,8 +49,6 @@ def p_variables(p):
                 globals.funcs_dir[globals.current_scope]['vars'][var_name] = vars_type
         else:
             globals.funcs_dir[globals.current_scope] = {'vars': {var_name: vars_type}}
-
-
 
 def p_list_ids(p):
     "list_ids : ID mas_ids"
@@ -91,7 +96,7 @@ def p_func_start(p):
     # Set the global variable current scope to be the new function
     globals.current_scope = p[2]
 
-    # Check if we already have the function declared in out func dir
+    # Check if we already have the function declared in out func dir
     if globals.current_scope in globals.funcs_dir:
         raise ReferenceError(f"'{globals.current_scope}' function has already been declared")
 
@@ -110,7 +115,7 @@ def p_list_params(p):
         param_name = p[1]
         param_type = p[3]
 
-        # Check scope
+        # Check scope
         if globals.current_scope in globals.funcs_dir:
             # Check if we have one already declared within the scope
             if param_name in globals.funcs_dir[globals.current_scope]['vars']:
@@ -172,107 +177,90 @@ def p_assign(p):
         expected_type = globals.funcs_dir[globals.current_scope]["vars"][variable_name]
         raise TypeError(f"Result type must be '{expected_type}', not '{assigned_type}'")
     else:
+        globals.quadruples_queue.add_quadruple('=', assigned_value, None, variable_name)
         p[0] = ['assign', variable_name, assigned_value]
 
 def p_expresion(p):
-    "expresion : exp mas_expresiones"
-    if p[2] is None:
+    """expresion : exp
+                | exp GREATERTHAN exp
+                | exp LESSTHAN exp
+                | exp NOTEQUAL exp"""
+
+    if len(p) == 2:
         p[0] = p[1]
     else:
-        # Get operator and right operand
-        operator, right_exp = p[2]
-
         # Pop the last types
         right_operand_type = operand_type_stack.pop()
         left_operand_type = operand_type_stack.pop()
 
         # Check expected type
-        result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+        result_type = get_expected_type(left_operand_type, right_operand_type, p[2])
 
         # Push the new result type to the stack
         operand_type_stack.append(result_type)
 
-        p[0] = [operator, p[1], right_exp]
-
-def p_mas_expresiones(p):
-    """mas_expresiones : GREATERTHAN exp
-                        | LESSTHAN exp
-                        | NOTEQUAL exp
-                        | empty"""
-    if len(p) == 3:
-        p[0] = [p[1], p[2]]
-    else:
-        p[0] = None
+        temp_var = globals.quadruples_queue.new_temp()
+        globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+        p[0] = temp_var
 
 def p_exp(p):
-    "exp : termino mas_exp"
-    if len(p) == 3:
-        if p[2] is None:
-            p[0] = p[1]
-        else:
-            operator = p[2][0]
+    """exp : exp PLUS exp
+            | exp MINUS exp"""
 
-            # Pop the last types
-            right_operand_type = operand_type_stack.pop()
-            left_operand_type = operand_type_stack.pop()
+    # Pop the last types
+    right_operand_type = operand_type_stack.pop()
+    left_operand_type = operand_type_stack.pop()
 
-            # Check expected type
-            result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+    # Check expected type
+    result_type = get_expected_type(left_operand_type, right_operand_type, p[2])
 
-            # Push the new result type to the stack
-            operand_type_stack.append(result_type)
+    # Push the new result type to the stack
+    operand_type_stack.append(result_type)
 
-            p[0] = [p[1]] + p[2]
-    else:
-        p[0] = None
+    temp_var = globals.quadruples_queue.new_temp()
+    globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+    p[0] = temp_var
 
-def p_mas_exp(p):
-    """mas_exp : PLUS exp
-                | MINUS exp
-                | empty"""
-    if p[1] != None:
-        p[0] = [p[1], p[2]]
+def p_exp_factor(p):
+    "exp : termino"
+
+    p[0] = p[1]
 
 def p_termino(p):
-    "termino : factor mas_terminos"
-    if p[2] is None:
-        p[0] = p[1]
-    else:
-        left_termino = p[1]
-        operator, right_termino = p[2]
+    """termino : termino TIMES termino
+                | termino DIVIDE termino"""
 
-        # Pop the last types
-        right_operand_type = operand_type_stack.pop()
-        left_operand_type = operand_type_stack.pop()
+    # Pop the last types
+    right_operand_type = operand_type_stack.pop()
+    left_operand_type = operand_type_stack.pop()
 
-        # Check expected type
-        result_type = get_expected_type(left_operand_type, right_operand_type, operator)
+    # Check expected type
+    result_type = get_expected_type(left_operand_type, right_operand_type, p[2])
 
-        # Push the new result type to the stack
-        operand_type_stack.append(result_type)
+    # Push the new result type to the stack
+    operand_type_stack.append(result_type)
 
-        p[0] = [operator, left_termino, right_termino]
+    temp_var = globals.quadruples_queue.new_temp()
+    globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+    p[0] = temp_var
 
-
-def p_mas_terminos(p):
-    """mas_terminos : TIMES termino
-                    | DIVIDE termino
-                    | empty"""
-    if len(p) == 3:
-        p[0] = [p[1], p[2]]
-    else:
-        p[0] = None
+def p_termino_factor(p):
+    "termino : factor"
+    p[0] = p[1]
 
 def p_factor(p):
     """factor : LPAREN expresion RPAREN
-                | factor_opt
-                | PLUS factor_opt
-                | MINUS factor_opt"""
+                | PLUS factor %prec UPLUS
+                | MINUS factor %prec UMINUS
+                | factor_opt"""
 
     if len(p) == 4:
         p[0] = p[2]
     elif len(p) == 3:
-        p[0] = [p[1], p[2]]
+        if p[1] == '-':
+            p[0] = -p[2]
+        else:
+            p[0] = p[2]
     else:
         p[0] = p[1]
 
@@ -348,14 +336,13 @@ def p_more_opt(p):
         p[0] = []
 
 def p_empty(p):
-    'empty :'
+    "empty :"
     pass
 
 def p_error(p):
-    print("Error de sintaxis en la entrada:", p)
+    print("Syntax error in input!", p)
 
-# Initialize stacks and queue
-quadruples_queue = QuadruplesQueue() # Used to keep track of the generated quadruplets order
+# Initialize stacks
 current_type_stack = deque() # Used to keep track of type of vars when storing them in directory
 current_var_stack = deque() # Used to keep track of name of vars when storing them in directory
 operand_type_stack = deque() # Used to keep track of the operand type when we have operations
