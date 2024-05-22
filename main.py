@@ -7,7 +7,7 @@ from helper_funcs import generate_cubo_semantico
 
 if __name__ == "__main__":
     # Define the path to the input file
-    input_file_path = os.path.join("tests", "QuadTest.txt")
+    input_file_path = os.path.join("tests", "BasicProgram.txt")
 
     # Read the content of the input file
     with open(input_file_path, "r") as file:
