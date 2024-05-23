@@ -1,5 +1,5 @@
 # Imports
-from Quadruples import QuadruplesQueue
+from quadruples_manager import QuadruplesQueue
 from memory_manager import Memory
 
 # Dictionary of functions and variables

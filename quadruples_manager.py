@@ -1,3 +1,6 @@
+# Imports
+import globals
+
 # Class to define a quadruple
 class Quadruples:
     def __init__(self, operator, operand1=None, operand2=None, result=None):
@@ -72,3 +75,27 @@ class QuadruplesQueue:
                 quad.result = result
         else:
             raise IndexError(f"Quadruple index {index} out of range")
+
+    def generate_obj_file(self):
+        with open("ovejota.txt", "w") as file:
+            file.write("Const table:\n")
+
+            file.write("Constant integers:\n")
+            file.write(f"base = {globals.global_memory.const_int_base}\n")
+            file.write(f"{globals.global_memory.const_int_list}\n")
+
+            file.write("Constant floats:\n")
+            file.write(f"base = {globals.global_memory.const_float_base}\n")
+            file.write(f"{globals.global_memory.const_float_list}\n")
+
+            file.write("Constant strings:\n")
+            file.write(f"base = {globals.global_memory.const_string_base}\n")
+            file.write(f"{globals.global_memory.const_string_list}\n")
+
+            file.write("Constant bools:\n")
+            file.write(f"base = {globals.global_memory.const_bool_base}\n")
+            file.write(f"{globals.global_memory.const_bool_list}\n")
+
+            file.write("Quadruples list:\n")
+            for quad in self.memory_quadruples_queue:
+                file.write(f"{quad}\n")
