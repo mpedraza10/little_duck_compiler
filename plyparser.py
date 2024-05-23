@@ -1,8 +1,9 @@
 # Imports
+import re
 from collections import deque
 import ply.yacc as yacc
 from plylexer import tokens
-from helper_funcs import get_expected_type, get_operand_type
+from helper_funcs import get_expected_type, get_operand_type, translate_to_memory, translate_operand_to_memory, translate_operator_to_memory, translate_result_to_memory
 import globals
 
 # ------------------------------------------------- Define grammar rules (Syntax Parser) -------------------------------------------------
@@ -38,6 +39,7 @@ def p_variables(p):
     vars_type = current_type_stack.pop()
 
     # Pop the vars and types and add them to the directories
+    current_var_stack.reverse()
     while current_var_stack:
         var_name = current_var_stack.pop()
 
@@ -47,8 +49,10 @@ def p_variables(p):
                 raise ReferenceError(f"'{var_name}' variable has already been declared")
             else:
                 globals.funcs_dir[globals.current_scope]['vars'][var_name] = vars_type
+                globals.global_memory.allocate_var(var_name, vars_type)
         else:
             globals.funcs_dir[globals.current_scope] = {'vars': {var_name: vars_type}}
+            globals.global_memory.allocate_var(var_name, vars_type)
 
 def p_list_ids(p):
     "list_ids : ID mas_ids"
@@ -177,7 +181,15 @@ def p_assign(p):
         expected_type = globals.funcs_dir[globals.current_scope]["vars"][variable_name]
         raise TypeError(f"Result type must be '{expected_type}', not '{assigned_type}'")
     else:
+        # Translate to memory
+        operator_memory = translate_operator_to_memory("=")
+        operand1_memory = translate_operand_to_memory(assigned_value, assigned_type)
+        result_memory = translate_result_to_memory(variable_name, assigned_type)
+
+        # Add quadruple
         globals.quadruples_queue.add_quadruple('=', assigned_value, None, variable_name)
+        globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, -1, result_memory)
+
         p[0] = ['assign', variable_name, assigned_value]
 
 def p_expresion(p):
@@ -199,8 +211,19 @@ def p_expresion(p):
         # Push the new result type to the stack
         operand_type_stack.append(result_type)
 
+        # Generate a new temp var
         temp_var = globals.quadruples_queue.new_temp()
+
+        # Add the temp var to assign virtual memory num
+        globals.global_memory.allocate_temp(temp_var, result_type)
+
+        # Get memory address equivalents
+        operator_memory, operand1_memory, operand2_memory, result_memory = translate_to_memory(p[2], p[1], left_operand_type, p[3], right_operand_type, temp_var, result_type)
+
+        # Add to quadruples list
         globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+        globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, operand2_memory, result_memory)
+
         p[0] = temp_var
 
 def p_exp(p):
@@ -217,8 +240,19 @@ def p_exp(p):
     # Push the new result type to the stack
     operand_type_stack.append(result_type)
 
+    # Generate a new temp var
     temp_var = globals.quadruples_queue.new_temp()
+
+    # Add the temp var to assign virtual memory num
+    globals.global_memory.allocate_temp(temp_var, result_type)
+
+    # Get memory address equivalents
+    operator_memory, operand1_memory, operand2_memory, result_memory = translate_to_memory(p[2], p[1], left_operand_type, p[3], right_operand_type, temp_var, result_type)
+
+    # Add to quadruple
     globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+    globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, operand2_memory, result_memory)
+
     p[0] = temp_var
 
 def p_exp_factor(p):
@@ -240,8 +274,19 @@ def p_termino(p):
     # Push the new result type to the stack
     operand_type_stack.append(result_type)
 
+    # Generate a new temp var
     temp_var = globals.quadruples_queue.new_temp()
+
+    # Add the temp var to assign virtual memory num
+    globals.global_memory.allocate_temp(temp_var, result_type)
+
+    # Get memory address equivalents
+    operator_memory, operand1_memory, operand2_memory, result_memory = translate_to_memory(p[2], p[1], left_operand_type, p[3], right_operand_type, temp_var, result_type)
+
+    # Add to quadruple
     globals.quadruples_queue.add_quadruple(p[2], p[1], p[3], temp_var)
+    globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, operand2_memory, result_memory)
+
     p[0] = temp_var
 
 def p_termino_factor(p):
@@ -280,7 +325,23 @@ def p_cte(p):
     """cte : CTEINT
             | CTEFLOAT
             | CTEBOOL"""
-    p[0] = p[1]
+
+    # Received constant
+    constant = p[1]
+    constant_type = ""
+
+    # Set the type of variable
+    if isinstance(constant, bool):
+        constant_type = "bool"
+    elif isinstance(constant, float):
+        constant_type = "float"
+    elif isinstance(constant, int):
+        constant_type = "int"
+
+    # Assign the constant to a virtual memory
+    globals.global_memory.allocate_constant(constant, constant_type)
+
+    p[0] = constant
 
 def p_condition(p):
     "condition : condition_start body else_block ENDINSTRUC"
@@ -290,6 +351,7 @@ def p_condition(p):
 
     # Add the pending index to the quadruple
     globals.quadruples_queue.edit_quadruple(end_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
+    globals.quadruples_queue.edit_memory_quadruple(end_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
 
     p[0] = ['if', p[1], p[2], p[3]]
 
@@ -301,8 +363,15 @@ def p_condition_start(p):
     if expression_type != "bool":
         raise TypeError(f"Expression must be 'bool', not '{expression_type}'")
 
-    # Add the goto f when we finish evaluating the expression and save the index to return later
+    # Get memory num of expression
+    operator_memory = translate_operator_to_memory("gotof")
+    operand1_memory = translate_operand_to_memory(p[3], expression_type)
+
+    # Add the goto f when we finish evaluating the expression
     globals.quadruples_queue.add_quadruple("gotof", p[3], None, None)
+    globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, -1, -1)
+
+    # Save the index to return later
     jump_stack.append(globals.quadruples_queue.quadruples_len() - 1)
 
     p[0] = [p[1], p[3]]
@@ -316,8 +385,12 @@ def p_else_block(p):
 def p_check_else_jump(p):
     "check_else_jump : empty"
 
+    # Get memory address of operator
+    operator_memory = translate_operator_to_memory("goto")
+
     # Add the goto f when we finish evaluating the expression
     globals.quadruples_queue.add_quadruple("goto", None, None, None)
+    globals.quadruples_queue.add_memory_quadruple(operator_memory, -1, -1, -1)
 
     # Get the index of gotof we had pending
     pending_gotof_index = jump_stack.pop()
@@ -327,6 +400,7 @@ def p_check_else_jump(p):
 
     # Update the pending quadruple
     globals.quadruples_queue.edit_quadruple(pending_gotof_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
+    globals.quadruples_queue.edit_memory_quadruple(pending_gotof_index, None, None, None, globals.quadruples_queue.quadruples_len() + 1)
 
 def p_cycle(p):
     "cycle : do_while_start do_while_body WHILE LPAREN expresion RPAREN ENDINSTRUC"
@@ -339,8 +413,13 @@ def p_cycle(p):
     # Get the index of the start of do while
     start_do_while_index = jump_stack.pop()
 
+    # Get memory address of operator
+    operator_memory = translate_operator_to_memory("gotot")
+    operand1_memory = translate_operand_to_memory(p[5], expression_type)
+
     # Add the goto t to go back in case we need to continue looping
     globals.quadruples_queue.add_quadruple("gotot", p[5], None, start_do_while_index + 1)
+    globals.quadruples_queue.add_memory_quadruple(operator_memory, operand1_memory, -1, start_do_while_index + 1)
 
     p[0] = ('do_while', p[2], p[4])
 
@@ -380,17 +459,24 @@ def p_print(p):
     "print : PRINT LPAREN print_opt RPAREN ENDINSTRUC"
 
     for expr in p[3]:
-        if isinstance(expr, tuple):
-            expr_value = expr[0]
-            globals.quadruples_queue.add_quadruple('print', None, None, expr_value)
-        else:
-            globals.quadruples_queue.add_quadruple('print', None, None, expr)
+        # Get memory num of expression
+        operator_memory = translate_operator_to_memory("print")
+        result_memory = translate_result_to_memory(expr, None)
+
+        # Add quadruples
+        globals.quadruples_queue.add_quadruple('print', None, None, expr)
+        globals.quadruples_queue.add_memory_quadruple(operator_memory, -1, -1, result_memory)
 
     p[0] = ('print', p[3])
 
 def p_print_opt(p):
     """print_opt : expresion more_opt
                 | CTESTRING more_opt"""
+
+    # Check if we have a constant string to add in memory
+    if re.match(r'"([^"]*)"', p[1]):
+        # Assign the constant to a virtual memory
+        globals.global_memory.allocate_constant(p[1], "string")
 
     p[0] = [p[1]] + p[2]
 
@@ -407,7 +493,13 @@ def p_empty(p):
     pass
 
 def p_error(p):
-    print("Syntax error in input!", p)
+    if p:
+        error_message = f"Syntax error at token {p.type} ({p.value}) at line {p.lineno}"
+    else:
+        error_message = "Syntax error at EOF"
+
+    print(error_message)
+    raise SyntaxError(error_message)
 
 # Initialize stacks
 current_type_stack = deque() # Used to keep track of type of vars when storing them in directory
