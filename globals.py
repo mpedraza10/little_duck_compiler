@@ -1,6 +1,6 @@
 # Imports
 from quadruples_manager import QuadruplesQueue
-from memory_manager import Memory
+from virtual_memory_assigner import VirtualMemoryCompiler
 
 # Dictionary of functions and variables
 funcs_dir = {
@@ -19,4 +19,4 @@ CUBO_SEMANTICO = {}
 quadruples_queue = QuadruplesQueue() # Used to keep track of the generated quadruplets order
 
 # Memory instance
-global_memory = Memory()
+global_memory = VirtualMemoryCompiler()

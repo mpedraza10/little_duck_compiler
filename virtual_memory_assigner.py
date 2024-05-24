@@ -1,4 +1,4 @@
-class Memory:
+class VirtualMemoryCompiler:
     def __init__(self):
         # Base addresses for different types and scopes
         self.vars_int_base = 1000
