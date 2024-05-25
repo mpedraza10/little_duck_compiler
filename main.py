@@ -2,6 +2,7 @@
 import os
 from plylexer import lexer
 from plyparser import parser
+from virtual_machine import VirtualMachine
 import globals
 from helper_funcs import generate_cubo_semantico
 
@@ -77,3 +78,6 @@ if __name__ == "__main__":
 
     # Generate txt file
     globals.quadruples_queue.generate_obj_file()
+
+    # Start virtual machine
+    vm = VirtualMachine("ovejota.txt")

@@ -1,4 +1,19 @@
-Const table:
+Operators/Operations:
+['+', '-', '*', '/', '=', '>', '<', '!=', 'goto', 'gotot', 'gotof', 'print']
+Global vars:
+base = 1000
+Global int vars = 2
+base = 2000
+Global float vars = 2
+base = 3000
+Global bool vars = 2
+Tem vars:
+base = 8000
+Temp int vars = 1
+base = 9000
+Temp float vars = 2
+base = 10000
+Temp bool vars = 2
 Constant integers:
 base = 4000
 [5, 10, 4, 190, 1]

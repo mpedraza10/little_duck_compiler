@@ -78,8 +78,33 @@ class QuadruplesQueue:
 
     def generate_obj_file(self):
         with open("ovejota.txt", "w") as file:
-            file.write("Const table:\n")
+            # Operations array
+            file.write("Operators/Operations:\n")
+            file.write(f"{globals.global_memory.operators_operations_list}\n")
 
+            # Global vars count and base
+            file.write("Global vars:\n")
+            file.write(f"base = {globals.global_memory.vars_int_base}\n")
+            file.write(f"Global int vars = {len(globals.global_memory.vars_int_list)}\n")
+
+            file.write(f"base = {globals.global_memory.vars_float_base}\n")
+            file.write(f"Global float vars = {len(globals.global_memory.vars_float_list)}\n")
+
+            file.write(f"base = {globals.global_memory.vars_bool_base}\n")
+            file.write(f"Global bool vars = {len(globals.global_memory.vars_bool_list)}\n")
+
+            # Temp vars count and base
+            file.write("Tem vars:\n")
+            file.write(f"base = {globals.global_memory.temp_int_base}\n")
+            file.write(f"Temp int vars = {len(globals.global_memory.temp_int_list)}\n")
+
+            file.write(f"base = {globals.global_memory.temp_float_base}\n")
+            file.write(f"Temp float vars = {len(globals.global_memory.temp_float_list)}\n")
+
+            file.write(f"base = {globals.global_memory.temp_bool_base}\n")
+            file.write(f"Temp bool vars = {len(globals.global_memory.temp_bool_list)}\n")
+
+            # Constants
             file.write("Constant integers:\n")
             file.write(f"base = {globals.global_memory.const_int_base}\n")
             file.write(f"{globals.global_memory.const_int_list}\n")
