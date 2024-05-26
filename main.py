@@ -81,3 +81,4 @@ if __name__ == "__main__":
 
     # Start virtual machine
     vm = VirtualMachine("ovejota.txt")
+    vm.execute()
