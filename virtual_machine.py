@@ -205,7 +205,7 @@ class VirtualMachine:
 
     def set_value(self, result_address, value):
         # Use the ranges of the bases to determine weather we're having a global or temp var and store the value
-        if result_address >=  self.global_memory.int_base and result_address <= self.global_memory.bool_base:
+        if result_address >=  self.global_memory.int_base and result_address <= self.global_memory.bool_base + 999:
             if result_address >= self.global_memory.int_base and result_address < self.global_memory.float_base:
                 self.global_memory.integers[result_address - self.global_memory.int_base] = value
             elif result_address >= self.global_memory.float_base and result_address < self.global_memory.bool_base:
@@ -217,14 +217,16 @@ class VirtualMachine:
                 self.temp_memory.integers[result_address - self.temp_memory.int_base] = value
             elif result_address >= self.temp_memory.float_base and result_address < self.temp_memory.bool_base:
                 self.temp_memory.floats[result_address - self.temp_memory.float_base] = value
-            else:
+            elif result_address >= self.temp_memory.bool_base and result_address < self.temp_memory.bool_base + 999:
                 self.temp_memory.bools[result_address - self.temp_memory.bool_base] = value
+            else:
+                raise MemoryError(f"Address {result_address} not available!")
 
     def get_value(self, operand):
         if operand in self.const_table:
             return self.const_table[operand]
         else:
-            if operand >=  self.global_memory.int_base and operand <= self.global_memory.bool_base:
+            if operand >=  self.global_memory.int_base and operand <= self.global_memory.bool_base + 999:
                 if operand >= self.global_memory.int_base and operand < self.global_memory.float_base:
                     return self.global_memory.integers[operand - self.global_memory.int_base]
                 elif operand >= self.global_memory.float_base and operand < self.global_memory.bool_base:
@@ -236,8 +238,10 @@ class VirtualMachine:
                     return self.temp_memory.integers[operand - self.temp_memory.int_base]
                 elif operand >= self.temp_memory.float_base and operand < self.temp_memory.bool_base:
                     return self.temp_memory.floats[operand - self.temp_memory.float_base]
-                else:
+                elif operand >= self.temp_memory.bool_base and operand < self.temp_memory.bool_base + 999:
                     return self.temp_memory.bools[operand - self.temp_memory.bool_base]
+                else:
+                    raise MemoryError(f"Address {operand} not available!")
 
 
     def handle_instruction(self, instruction):
@@ -392,11 +396,30 @@ class VirtualMachine:
             # Set the value in corresponding memory
             self.set_value(result, res)
         elif self.operators_operations_list[operator - 1] == "goto":
-            pass
+            # Get the destination of where to move the pointer
+            self.instruction_pointer = result - 2
         elif self.operators_operations_list[operator - 1] == "gotot":
-            pass
+            # Get values of operands
+            left_val = None
+            if left_operand in self.const_table:
+                left_val = self.const_table[left_operand]
+            else:
+                left_val = self.get_value(left_operand)
+
+            # Get the destination of where to move the pointer
+            if left_val:
+                self.instruction_pointer = result - 2
         elif self.operators_operations_list[operator - 1] == "gotof":
-            pass
+            # Get values of operands
+            left_val = None
+            if left_operand in self.const_table:
+                left_val = self.const_table[left_operand]
+            else:
+                left_val = self.get_value(left_operand)
+
+            # Get the destination of where to move the pointer
+            if not left_val:
+                self.instruction_pointer = result - 2
         elif self.operators_operations_list[operator - 1] == "print":
             res = self.get_value(result)
             print(res)

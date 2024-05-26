@@ -1,12 +1,22 @@
 program BasicProgram;
 
-var x, y, z: int;
+var i, j: int;
 
 main
 {
-    x = 5;
-    y = 10;
-    z = x + y;
-    print("El resultado de x + y es igual a ", z);
+    i = 5;
+    j = 10;
+
+    do {
+        i = i + 1;
+
+        if (i < j) {
+            print("La i sigue siendo menor: i = ", i);
+        } else {
+            print("La i es ahora igual que j");
+            print("i = ", i);
+            print("j = ", j);
+        };
+    } while ( i < j );
 }
 end

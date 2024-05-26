@@ -1,7 +1,7 @@
 Operators/Operations:
 ['+', '-', '*', '/', '=', '>', '<', '!=', 'goto', 'gotot', 'gotof', 'print']
 Global vars:
-Global int vars = 3
+Global int vars = 2
 base = 1000
 Global float vars = 0
 base = 2000
@@ -12,24 +12,35 @@ Temp int vars = 1
 base = 8000
 Temp float vars = 0
 base = 9000
-Temp bool vars = 0
+Temp bool vars = 2
 base = 10000
 Constant integers:
 base = 4000
-[5, 10]
+[5, 10, 1]
 Constant floats:
 base = 5000
 []
 Constant strings:
 base = 6000
-['"El resultado de x + y es igual a "']
+['"La i sigue siendo menor: i = "', '""', '"La i es ahora igual que j"', '"i = "', '"j = "']
 Constant bools:
 base = 7000
 []
 Quadruples list:
 (5, 4000, -1, 1000)
 (5, 4001, -1, 1001)
-(3, 1000, 1001, 8000)
-(5, 8000, -1, 1002)
+(1, 1000, 4002, 8000)
+(5, 8000, -1, 1000)
+(7, 1000, 1001, 10000)
+(11, 10000, -1, 11)
 (12, -1, -1, 6000)
-(12, -1, -1, 1002)
+(12, -1, -1, 1000)
+(12, -1, -1, 6001)
+(9, -1, -1, 16)
+(12, -1, -1, 6002)
+(12, -1, -1, 6003)
+(12, -1, -1, 1000)
+(12, -1, -1, 6004)
+(12, -1, -1, 1001)
+(7, 1000, 1001, 10001)
+(10, 10001, -1, 3)
