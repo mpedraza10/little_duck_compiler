@@ -228,7 +228,9 @@ def p_expresion(p):
 
 def p_exp(p):
     """exp : exp PLUS exp
-            | exp MINUS exp"""
+            | exp MINUS exp
+            | exp AND exp
+            | exp OR exp"""
 
     # Pop the last types
     right_operand_type = operand_type_stack.pop()

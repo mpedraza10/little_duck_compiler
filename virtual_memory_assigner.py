@@ -13,7 +13,7 @@ class VirtualMemoryCompiler:
         self.temp_bool_base = 10000
 
         # Operators/operations list
-        self.operators_operations_list = ["+", "-", "*", "/", "=", ">", "<", "!=", "goto", "gotot", "gotof", "print"]
+        self.operators_operations_list = ["+", "-", "*", "/", "=", ">", "<", "!=", "goto", "gotot", "gotof", "print", "and", "or"]
 
         # Lists to map variables
         self.vars_int_list = []

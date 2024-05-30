@@ -1,5 +1,5 @@
 Operators/Operations:
-['+', '-', '*', '/', '=', '>', '<', '!=', 'goto', 'gotot', 'gotof', 'print']
+['+', '-', '*', '/', '=', '>', '<', '!=', 'goto', 'gotot', 'gotof', 'print', 'and', 'or']
 Global vars:
 Global int vars = 2
 base = 1000
@@ -8,39 +8,35 @@ base = 2000
 Global bool vars = 0
 base = 3000
 Tem vars:
-Temp int vars = 1
+Temp int vars = 4
 base = 8000
 Temp float vars = 0
 base = 9000
-Temp bool vars = 2
+Temp bool vars = 3
 base = 10000
 Constant integers:
 base = 4000
-[5, 10, 1]
+[5, 1, 4, 8, 2, 4, 9, 9]
 Constant floats:
 base = 5000
 []
 Constant strings:
 base = 6000
-['"La i sigue siendo menor: i = "', '""', '"La i es ahora igual que j"', '"i = "', '"j = "']
+['"Both of the variables is greater than 9"', '"One or both of the variables are not greater than 9"']
 Constant bools:
 base = 7000
 []
 Quadruples list:
-(5, 4000, -1, 1000)
-(5, 4001, -1, 1001)
-(1, 1000, 4002, 8000)
-(5, 8000, -1, 1000)
-(7, 1000, 1001, 10000)
-(11, 10000, -1, 11)
+(1, 4000, 4001, 8000)
+(2, 8000, 4002, 8001)
+(5, 8001, -1, 1000)
+(2, 4003, 4004, 8002)
+(1, 8002, 4002, 8003)
+(5, 8003, -1, 1001)
+(6, 1000, 4006, 10000)
+(6, 1001, 4006, 10001)
+(13, 10000, 10001, 10002)
+(11, 10002, -1, 13)
 (12, -1, -1, 6000)
-(12, -1, -1, 1000)
+(9, -1, -1, 14)
 (12, -1, -1, 6001)
-(9, -1, -1, 16)
-(12, -1, -1, 6002)
-(12, -1, -1, 6003)
-(12, -1, -1, 1000)
-(12, -1, -1, 6004)
-(12, -1, -1, 1001)
-(7, 1000, 1001, 10001)
-(10, 10001, -1, 3)

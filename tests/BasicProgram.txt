@@ -4,19 +4,13 @@ var i, j: int;
 
 main
 {
-    i = 5;
-    j = 10;
+    i = 5 + 1 - 4;
+    j = 8 - 2 + 4;
 
-    do {
-        i = i + 1;
-
-        if (i < j) {
-            print("La i sigue siendo menor: i = ", i);
-        } else {
-            print("La i es ahora igual que j");
-            print("i = ", i);
-            print("j = ", j);
-        };
-    } while ( i < j );
+    if ((i > 9) and (j > 9)) {
+        print("Both of the variables is greater than 9");
+    } else {
+        print("One or both of the variables are not greater than 9");
+    };
 }
 end

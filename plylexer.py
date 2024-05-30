@@ -63,7 +63,9 @@ reserved = {
     "do": "DO",
     "int": "INT",
     "float": "FLOAT",
-    "bool": "BOOL"
+    "bool": "BOOL",
+    "and": "AND",
+    "or": "OR"
 }
 
 # Combine the tokens and reserved keywords

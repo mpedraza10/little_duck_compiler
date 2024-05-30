@@ -55,6 +55,10 @@ def generate_cubo_semantico():
     globals.CUBO_SEMANTICO['int']['float']['>'] = 'bool'
     globals.CUBO_SEMANTICO['float']['int']['>'] = 'bool'
 
+    # Logical operators
+    globals.CUBO_SEMANTICO['bool']['bool']['and'] = 'bool'
+    globals.CUBO_SEMANTICO['bool']['bool']['or'] = 'bool'
+
 # ------------------------------------------------- Helper functions -------------------------------------------------
 
 # Function that returns the expected type of an operation

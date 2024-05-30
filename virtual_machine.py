@@ -423,3 +423,41 @@ class VirtualMachine:
         elif self.operators_operations_list[operator - 1] == "print":
             res = self.get_value(result)
             print(res)
+        elif self.operators_operations_list[operator - 1] == "and":
+            # Get values of operands
+            left_val = None
+            right_val = None
+            if left_operand in self.const_table:
+                left_val = self.const_table[left_operand]
+            else:
+                left_val = self.get_value(left_operand)
+
+            if right_operand in self.const_table:
+                right_val = self.const_table[right_operand]
+            else:
+                right_val = self.get_value(right_operand)
+
+            # Do the operation
+            res = left_val and right_val
+
+            # Set the value in corresponding memory
+            self.set_value(result, res)
+        elif self.operators_operations_list[operator - 1] == "or":
+            # Get values of operands
+            left_val = None
+            right_val = None
+            if left_operand in self.const_table:
+                left_val = self.const_table[left_operand]
+            else:
+                left_val = self.get_value(left_operand)
+
+            if right_operand in self.const_table:
+                right_val = self.const_table[right_operand]
+            else:
+                right_val = self.get_value(right_operand)
+
+            # Do the operation
+            res = left_val or right_val
+
+            # Set the value in corresponding memory
+            self.set_value(result, res)
